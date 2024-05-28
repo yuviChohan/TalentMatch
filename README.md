@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# TalentMatch
+
+TalentMatch is a project that grades resumes when an applicant applies to a job. It helps streamline the hiring process by automatically evaluating resumes based on predefined criteria.
+
+## Technologies Used
+
+- React
+- JavaScript
+- HTML
+- CSS
 
 ## Getting Started
 
-First, run the development server:
+To initialize the TalentMatch project after cloning it, follow these steps:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Install Node.js if you haven't already. You can download it from [https://nodejs.org](https://nodejs.org).
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Open a terminal or command prompt and navigate to the project directory.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Install the project dependencies by running the following command:
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+    ```bash
+    npm install
+    ```
 
-## Learn More
+4. Once the dependencies are installed, you can start the development server by running the following command:
 
-To learn more about Next.js, take a look at the following resources:
+    ```bash
+    npm start
+    ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+    This will start the React development server and you can access the application in your browser at [http://localhost:3000](http://localhost:3000).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## Developer Note
 
-## Deploy on Vercel
+Please note that all the contexts and components in this project have their documentation in the `documentation.md` file located in each folder. Make sure to refer to these files for detailed information about each context or component.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.

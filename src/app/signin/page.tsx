@@ -1,4 +1,5 @@
 // src/app/pages/signin.tsx
+"use client";
 import React, { useState } from 'react';
 import { auth } from "../firebase";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInAnonymously } from "firebase/auth";
@@ -46,7 +47,7 @@ export default function SignIn() {
       });
   };
 
-  const saveUserToDatabase = async (user) => {
+  const saveUserToDatabase = async (user: any) => {
     try {
       const response = await fetch('/api/saveUser', {
         method: 'POST',

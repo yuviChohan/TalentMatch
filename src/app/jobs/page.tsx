@@ -1,6 +1,6 @@
 // src/app/pages/jobs.tsx
 import React from 'react';
-import ApplicationCard from '../contexts/ApplicationCard';
+import ApplicationCard from '../components/ApplicationCard';
 
 const Jobs: React.FC = () => {
   return (

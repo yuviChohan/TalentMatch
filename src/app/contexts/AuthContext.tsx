@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, onAuthStateChanged } from "firebase/auth";
 import { auth } from '../firebase';
+import { ReactNode } from 'react';
 
 interface AuthContextProps {
   uid: string | null;
@@ -9,7 +10,8 @@ interface AuthContextProps {
 
 const AuthContext = createContext<AuthContextProps>({ uid: null });
 
-export const AuthProvider: React.FC = ({ children }) => {
+
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [uid, setUid] = useState<string | null>(null);
 
   useEffect(() => {
