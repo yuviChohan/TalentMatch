@@ -14,7 +14,7 @@ const Home: React.FC = () => {
     <main className="flex min-h-screen flex-col items-center justify-center p-6 bg-gradient-to-r from-blue-500 to-green-500 text-white">
       <div className="flex flex-col items-center justify-center max-w-4xl w-full bg-white bg-opacity-70 shadow-lg rounded-lg p-8">
         <h1 className="text-5xl font-extrabold mb-8 text-blue-600">
-          Welcome to <span className="text-green-500">SHIFTSIXOS</span>
+          Welcome to <span className="text-green-500">TalentMatch by SHIFTSIXOS</span>
         </h1>
         <p className="text-2xl mb-8 text-gray-800">
           Your one-stop solution for hiring remote staff for your law firm.
