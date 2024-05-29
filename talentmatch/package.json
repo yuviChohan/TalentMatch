@@ -3,14 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3009",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
-    "buttercms": "^2.0.1",
     "next": "14.2.3",
+    "novel": "^0.4.2",
     "react": "^18",
     "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^18"
