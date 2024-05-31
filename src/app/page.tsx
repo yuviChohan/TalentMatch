@@ -1,6 +1,6 @@
 "use client";
 // src/app/page.tsx
-import './globals.css'; // Adjust the path to your globals.css file
+import './globals.css'; 
 import React, { useState } from 'react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
