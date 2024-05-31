@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import JobCard from '../components/JobCard';
 
 const Jobs: React.FC = () => {
   const [selectedJob, setSelectedJob] = useState<any>(null);
   const [jobTitle, setJobTitle] = useState<string>('');
   const [location, setLocation] = useState<string>('');
+  const [jobs, setJobs] = useState<any[]>([]);
   const [filteredJobs, setFilteredJobs] = useState<any[]>([]);
 
   const jobList = [
@@ -25,14 +26,33 @@ const Jobs: React.FC = () => {
       details: 'Detailed description for Software Engineer.'
     }
     // Add more jobs as needed
-  ];
+  ];  
 
-  const handleSearch = () => {
-    const filtered = jobList.filter((job) =>
-      (jobTitle === '' || job.title.toLowerCase().includes(jobTitle.toLowerCase())) &&
-      (location === '' || job.location.toLowerCase().includes(location.toLowerCase()))
-    );
-    setFilteredJobs(filtered);
+  // Fetch jobs from backend API
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        const response = await fetch('https://your-api-url.com/jobs'); // Replace with your API endpoint
+        const data = await response.json();
+        setJobs(data);
+        setFilteredJobs(data); // Initialize filteredJobs with the fetched data
+      } catch (error) {
+        console.error('Error fetching jobs:', error);
+      }
+    };
+
+    fetchJobs();
+  }, []);
+
+  // Handle search functionality
+  const handleSearch = async () => {
+    try {
+      const response = await fetch(`https://your-api-url.com/jobs?title=${jobTitle}&location=${location}`);
+      const data = await response.json();
+      setFilteredJobs(data);
+    } catch (error) {
+      console.error('Error searching jobs:', error);
+    }
   };
 
   return (
@@ -97,5 +117,6 @@ const Jobs: React.FC = () => {
     </main>
   );
 };
+
 
 export default Jobs;

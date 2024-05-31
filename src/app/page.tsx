@@ -9,7 +9,7 @@ import Footer from './components/Footer';
 import Home from './pages/index';
 import Jobs from './pages/jobs';
 import Profile from './pages/profile';
-import Admin from './pages/admin';
+import Admin from './pages/AdminProfile';
 import SignIn from './pages/signin';
 
 const Page: React.FC = () => {

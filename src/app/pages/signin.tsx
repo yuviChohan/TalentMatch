@@ -1,9 +1,8 @@
-// src/app/pages/signin.tsx
 import React, { useState } from 'react';
 import { auth } from "../firebase";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInAnonymously } from "firebase/auth";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInAnonymously, signOut } from "firebase/auth";
 
-export default function SignIn() {
+const SignIn: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -37,7 +36,6 @@ export default function SignIn() {
         const user = userCredential.user;
         console.log(user);
         setMessage("Signed up with email!");
-        // Save user to relational database
         await saveUserToDatabase(user);
       })
       .catch((error) => {
@@ -92,12 +90,21 @@ export default function SignIn() {
       });
   };
 
+  const handleSignOut = () => {
+    signOut(auth)
+      .then(() => {
+        setMessage("Signed out successfully!");
+      })
+      .catch((error) => {
+        console.error(error);
+        setMessage(error.message);
+      });
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-6 bg-gray-50">
-      <div className="flex flex-col items-center justify-center max-w-md w-full bg-white shadow-lg rounded-lg p-8">
-        <h1 className="text-5xl font-extrabold mb-8">
-          <span className="text-blue-600">Talent</span><span className="text-green-500">Match</span>
-        </h1>
+    <main className="flex min-h-screen flex-col items-center p-6 bg-gray-100">
+      <div className="w-full max-w-md bg-white shadow-xl rounded-xl p-10">
+
 
         {!showEmailForm && (
           <>
@@ -119,6 +126,12 @@ export default function SignIn() {
             >
               Sign in Anonymously
             </button>
+            <button 
+              onClick={handleSignOut} 
+              className="w-full p-3 mb-4 text-white bg-black rounded-lg hover:bg-gray-800 transition-colors duration-300"
+            >
+              Sign Out
+            </button>
           </>
         )}
 
@@ -129,14 +142,14 @@ export default function SignIn() {
               placeholder="Email" 
               value={email} 
               onChange={handleEmailChange} 
-              className="w-full p-3 mb-4 border border-gray-300 rounded-lg text-black"
+              className="w-full p-3 mb-4 border border-gray-300 rounded-lg"
             />
             <input 
               type="password" 
               placeholder="Password" 
               value={password} 
               onChange={handlePasswordChange} 
-              className="w-full p-3 mb-4 border border-gray-300 rounded-lg text-black"
+              className="w-full p-3 mb-4 border border-gray-300 rounded-lg"
             />
             <button 
               onClick={isSignUp ? signUpWithEmail : signInWithEmail} 
@@ -163,4 +176,6 @@ export default function SignIn() {
       </div>
     </main>
   );
-}
+};
+
+export default SignIn;

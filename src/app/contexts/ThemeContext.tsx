@@ -1,3 +1,4 @@
+
 "use client";
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
@@ -9,25 +10,27 @@ interface ThemeContextProps {
   textColor: string;
   accentTextColor: string;
   errorTextColor: string;
+  primaryBorderColor: string;
   toggleTheme: () => void;
 }
-
 const lightTheme = {
   backgroundColor: '#f8f9fa',
   frontColor: '#ffffff',
-  accentColor: '#007bff',
+  accentColor: '#4169e1',
   textColor: '#333333',
   accentTextColor: '#007bff',
   errorTextColor: '#ff4d4f',
+  primaryBorderColor: '#ced4da',
 };
 
 const darkTheme = {
   backgroundColor: '#121212',
   frontColor: '#1e1e1e',
-  accentColor: '#bb86fc',
+  accentColor: '#4169e1',
   textColor: '#e1e1e1',
   accentTextColor: '#bb86fc',
   errorTextColor: '#cf6679',
+  primaryBorderColor: '#303030',
 };
 
 const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
