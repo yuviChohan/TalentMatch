@@ -5,6 +5,7 @@ const Jobs: React.FC = () => {
   const [selectedJob, setSelectedJob] = useState<any>(null);
   const [jobTitle, setJobTitle] = useState<string>('');
   const [location, setLocation] = useState<string>('');
+  const [jobType, setJobType] = useState<string>('');
   const [jobs, setJobs] = useState<any[]>([]);
   const [filteredJobs, setFilteredJobs] = useState<any[]>([]);
 
@@ -24,35 +25,53 @@ const Jobs: React.FC = () => {
       type: 'Full-time',
       description: 'Tech Solutions Inc. - Develop and maintain software applications. Competitive pay and benefits. Positive and fun work environment.',
       details: 'Detailed description for Software Engineer.'
-    }
+    },
+    {
+      title: 'Marketing Manager',
+      location: 'Toronto, Ontario',
+      salary: 'From $50 an hour',
+      type: 'Full-time',
+      description: 'Marketing Agency X - Lead marketing campaigns and strategies. Competitive pay and benefits. Collaborative work environment.',
+      details: 'Detailed description for Marketing Manager.'
+    },
+    {
+      title: 'Graphic Designer',
+      location: 'Montreal, Quebec',
+      salary: 'From $25 an hour',
+      type: 'Part-time',
+      description: 'Creative Studio Y - Design visual content for various projects. Flexible schedule. Creative and dynamic team.',
+      details: 'Detailed description for Graphic Designer.'
+    },
     // Add more jobs as needed
   ];  
 
   // Fetch jobs from backend API
   useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        const response = await fetch('https://your-api-url.com/jobs'); // Replace with your API endpoint
-        const data = await response.json();
-        setJobs(data);
-        setFilteredJobs(data); // Initialize filteredJobs with the fetched data
-      } catch (error) {
-        console.error('Error fetching jobs:', error);
-      }
-    };
-
-    fetchJobs();
+    // Simulated fetch for demo purposes
+    setJobs(jobList);
+    setFilteredJobs(jobList);
   }, []);
 
   // Handle search functionality
   const handleSearch = async () => {
-    try {
-      const response = await fetch(`https://your-api-url.com/jobs?title=${jobTitle}&location=${location}`);
-      const data = await response.json();
-      setFilteredJobs(data);
-    } catch (error) {
-      console.error('Error searching jobs:', error);
-    }
+    let filtered = jobList.filter(job => {
+      return (
+        job.title.toLowerCase().includes(jobTitle.toLowerCase()) &&
+        job.location.toLowerCase().includes(location.toLowerCase()) &&
+        (jobType === '' || job.type === jobType)
+      );
+    });
+    setFilteredJobs(filtered);
+  };
+
+  // Handle sorting by salary
+  const sortBySalary = () => {
+    const sorted = [...filteredJobs].sort((a, b) => {
+      const salaryA = parseFloat(a.salary.split('$')[1]);
+      const salaryB = parseFloat(b.salary.split('$')[1]);
+      return salaryA - salaryB;
+    });
+    setFilteredJobs(sorted);
   };
 
   return (
@@ -85,7 +104,18 @@ const Jobs: React.FC = () => {
               <option value="Hamilton, Ontario">Hamilton, Ontario</option>
               <option value="Halifax, Nova Scotia">Halifax, Nova Scotia</option>
             </select>
+            <select
+              className="border border-gray-300 rounded p-2 text-gray-700"
+              value={jobType}
+              onChange={(e) => setJobType(e.target.value)}
+            >
+              <option value="">Select Type</option>
+              <option value="Full-time">Full-time</option>
+              <option value="Part-time">Part-time</option>
+              <option value="Contract">Contract</option>
+            </select>
             <button onClick={handleSearch} className="bg-blue-500 text-white rounded px-4 py-2">Search</button>
+            <button onClick={sortBySalary} className="bg-blue-500 text-white rounded px-4 py-2">Sort by Salary</button>
           </div>
         </div>
 
@@ -100,6 +130,7 @@ const Jobs: React.FC = () => {
                   type={job.type}
                   description={job.description}
                 />
+                <button className="bg-green-500 text-white rounded px-4 py-2 mt-2">Apply</button>
               </div>
             ))}
           </div>
@@ -107,16 +138,16 @@ const Jobs: React.FC = () => {
           <div className="w-3/5 p-4">
             {selectedJob && (
               <div className="bg-white p-6 rounded shadow-md">
-                <h2 className="text-xl font-bold mb-4">{selectedJob.title}</h2>
-                <p>{selectedJob.details}</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </main>
-  );
+                <h2 className="text-xl font-bold mb
+-4">{selectedJob.title}</h2>
+<p>{selectedJob.details}</p>
+</div>
+)}
+</div>
+</div>
+</div>
+</main>
+);
 };
-
 
 export default Jobs;
