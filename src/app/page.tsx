@@ -4,7 +4,7 @@ import './globals.css';
 import React, { useState } from 'react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
-import NavBar from './components/NavBar';
+import NavBar from './contexts/NavBar';
 import Footer from './components/Footer';
 import Home from './pages/index';
 import Jobs from './pages/jobs';
@@ -19,8 +19,8 @@ const Page: React.FC = () => {
     { name: 'Home', path: 'home' },
     { name: 'Jobs', path: 'jobs' },
     { name: 'Profile', path: 'profile' },
-    { name: 'Sign In', path: 'signin' }, // Add Sign In link
-    { name: 'Sign Up', path: 'signup' }, // Add Sign Up link
+    { name: 'Sign In', path: 'signin' },
+    { name: 'Sign Up', path: 'signup' }, 
   ];
 
   const renderPage = () => {

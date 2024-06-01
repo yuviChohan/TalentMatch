@@ -8,6 +8,7 @@ const SignIn: React.FC = () => {
   const [message, setMessage] = useState("");
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
@@ -15,6 +16,10 @@ const SignIn: React.FC = () => {
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   const signInWithEmail = () => {
@@ -102,36 +107,95 @@ const SignIn: React.FC = () => {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center p-6 bg-gray-100">
-      <div className="w-full max-w-md bg-white shadow-xl rounded-xl p-10">
+    <main className="flex min-h-screen items-center justify-center p-6 bg-white">
+      <div className="w-full max-w-md bg-gradient-to-b from-blue-500 to-light-blue-500 shadow-md rounded-xl p-6">
+        <div className="flex justify-center mb-6">
+          <img src="ShiftSixOs.png" alt="Logo" className="h-16" /> 
+        </div>
+        {!showEmailForm && !isSignUp && (
+          <>
+            <input 
+              type="text" 
+              placeholder="User name / Email" 
+              value={email} 
+              onChange={handleEmailChange} 
+              className="w-full p-3 mb-4 border border-gray-300 rounded-lg text-black"
+            />
+            <div className="relative">
+              <input 
+                type={showPassword ? "text" : "password"} 
+                placeholder="Password" 
+                value={password} 
+                onChange={handlePasswordChange} 
+                className="w-full p-3 mb-4 border border-gray-300 rounded-lg text-black"
+              />
+              <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
+              >
+                {showPassword ? "🙈" : "👁️"}
+              </button>
+            </div>
+            <button 
+              onClick={signInWithEmail} 
+              className="w-full p-3 mb-4 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors duration-300"
+            >
+              Sign In
+            </button>
+            <div className="flex justify-between items-center">
+              <span></span>
+              <span 
+                onClick={() => setIsSignUp(true)} 
+                className="text-white cursor-pointer"
+              >
+                Create an account
+              </span>
+            </div>
+            <button 
+              onClick={signInWithGoogle} 
+              className="w-full p-3 mb-4 mt-4 text-white bg-red-500 rounded-lg hover:bg-red-600 transition-colors duration-300"
+            >
+              Sign In with Google
+            </button>
+            <button 
+              onClick={signInAnonymouslyHandler} 
+              className="w-full p-3 text-white bg-gray-500 rounded-lg hover:bg-gray-600 transition-colors duration-300"
+            >
+              Continue as Guest
+            </button>
+          </>
+        )}
 
-
-        {!showEmailForm && (
+        {isSignUp && (
           <>
             <button 
               onClick={() => setShowEmailForm(true)} 
               className="w-full p-3 mb-4 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors duration-300"
             >
-              Sign in with Email
+              Sign up with Email
             </button>
             <button 
               onClick={signInWithGoogle} 
               className="w-full p-3 mb-4 text-white bg-red-500 rounded-lg hover:bg-red-600 transition-colors duration-300"
             >
-              Sign in with Google
+              Sign up with Google
             </button>
             <button 
               onClick={signInAnonymouslyHandler} 
               className="w-full p-3 mb-4 text-white bg-gray-500 rounded-lg hover:bg-gray-600 transition-colors duration-300"
             >
-              Sign in Anonymously
+              Continue as guest
             </button>
-            <button 
-              onClick={handleSignOut} 
-              className="w-full p-3 mb-4 text-white bg-black rounded-lg hover:bg-gray-800 transition-colors duration-300"
-            >
-              Sign Out
-            </button>
+            <div className="flex justify-between items-center">
+              <span></span>
+              <span 
+                onClick={() => setIsSignUp(false)} 
+                className="text-white cursor-pointer"
+              >
+                Already have an account? Sign in
+              </span>
+            </div>
           </>
         )}
 
@@ -142,15 +206,24 @@ const SignIn: React.FC = () => {
               placeholder="Email" 
               value={email} 
               onChange={handleEmailChange} 
-              className="w-full p-3 mb-4 border border-gray-300 rounded-lg"
+              className="w-full p-3 mb-4 border border-gray-300 rounded-lg text-black"
             />
-            <input 
-              type="password" 
-              placeholder="Password" 
-              value={password} 
-              onChange={handlePasswordChange} 
-              className="w-full p-3 mb-4 border border-gray-300 rounded-lg"
-            />
+            <div className="relative">
+              <input 
+                type={showPassword ? "text" : "password"} 
+                placeholder="Password" 
+                value={password} 
+                onChange={handlePasswordChange} 
+                className="w-full p-3 mb-4 border border-gray-300 rounded-lg text-black"
+              />
+              <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                className="absolute right-30 top-1/2 transform -translate-y-1/2 text-gray-600"
+              >
+                {showPassword ? "🙈" : "👁️"}
+              </button>
+            </div>
             <button 
               onClick={isSignUp ? signUpWithEmail : signInWithEmail} 
               className="w-full p-3 mb-4 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors duration-300"
@@ -164,7 +237,10 @@ const SignIn: React.FC = () => {
               {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
             </button>
             <button 
-              onClick={() => setShowEmailForm(false)} 
+              onClick={() => {
+                setShowEmailForm(false);
+                setIsSignUp(false);
+              }} 
               className="w-full p-3 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors duration-300"
             >
               Cancel

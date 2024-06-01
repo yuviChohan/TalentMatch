@@ -1,5 +1,5 @@
 import React from 'react';
-
+ 
 interface JobCardProps {
   title: string;
   location: string;
@@ -7,7 +7,7 @@ interface JobCardProps {
   type: string;
   description: string;
 }
-
+ 
 const JobCard: React.FC<JobCardProps> = ({ title, location, salary, type, description }) => {
   return (
     <div className="p-4 border rounded-lg shadow-md bg-white cursor-pointer hover:shadow-lg transition-shadow duration-300">
@@ -23,5 +23,5 @@ const JobCard: React.FC<JobCardProps> = ({ title, location, salary, type, descri
     </div>
   );
 };
-
+ 
 export default JobCard;
