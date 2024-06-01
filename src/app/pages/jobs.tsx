@@ -8,6 +8,7 @@ const Jobs: React.FC = () => {
   const [jobType, setJobType] = useState<string>('');
   const [jobs, setJobs] = useState<any[]>([]);
   const [filteredJobs, setFilteredJobs] = useState<any[]>([]);
+  const [sortOrder, setSortOrder] = useState<string>('lowToHigh');
 
   const jobList = [
     {
@@ -69,9 +70,21 @@ const Jobs: React.FC = () => {
     const sorted = [...filteredJobs].sort((a, b) => {
       const salaryA = parseFloat(a.salary.split('$')[1]);
       const salaryB = parseFloat(b.salary.split('$')[1]);
-      return salaryA - salaryB;
+      return sortOrder === 'lowToHigh' ? salaryA - salaryB : salaryB - salaryA;
     });
     setFilteredJobs(sorted);
+    setSortOrder(sortOrder === 'lowToHigh' ? 'highToLow' : 'lowToHigh');
+  };
+
+  const handleApply = (job: any) => {
+    // Implement your apply logic here
+    console.log(`Applying for job: ${job.title}`);
+  };
+
+  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      handleSearch();
+    }
   };
 
   return (
@@ -86,11 +99,13 @@ const Jobs: React.FC = () => {
               className="border border-gray-300 rounded p-2 text-gray-700"
               value={jobTitle}
               onChange={(e) => setJobTitle(e.target.value)}
+              onKeyPress={handleKeyPress}
             />
             <select
               className="border border-gray-300 rounded p-2 text-gray-700"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
+              onKeyPress={handleKeyPress}
             >
               <option value="">Select Location</option>
               <option value="Calgary, Alberta">Calgary, Alberta</option>
@@ -108,6 +123,7 @@ const Jobs: React.FC = () => {
               className="border border-gray-300 rounded p-2 text-gray-700"
               value={jobType}
               onChange={(e) => setJobType(e.target.value)}
+              onKeyPress={handleKeyPress}
             >
               <option value="">Select Type</option>
               <option value="Full-time">Full-time</option>
@@ -115,7 +131,9 @@ const Jobs: React.FC = () => {
               <option value="Contract">Contract</option>
             </select>
             <button onClick={handleSearch} className="bg-blue-500 text-white rounded px-4 py-2">Search</button>
-            <button onClick={sortBySalary} className="bg-blue-500 text-white rounded px-4 py-2">Sort by Salary</button>
+            <button onClick={sortBySalary} className="bg-blue-500 text-white rounded px-4 py-2">
+              Sort by Salary ({sortOrder === 'lowToHigh' ? 'Low to High' : 'High to Low'})
+            </button>
           </div>
         </div>
 
@@ -130,7 +148,7 @@ const Jobs: React.FC = () => {
                   type={job.type}
                   description={job.description}
                 />
-                <button className="bg-green-500 text-white rounded px-4 py-2 mt-2">Apply</button>
+                <button onClick={() => handleApply(job)} className="bg-green-500 text-white rounded px-4 py-2 mt-2">Apply</button>
               </div>
             ))}
           </div>
@@ -138,16 +156,15 @@ const Jobs: React.FC = () => {
           <div className="w-3/5 p-4">
             {selectedJob && (
               <div className="bg-white p-6 rounded shadow-md">
-                <h2 className="text-xl font-bold mb
--4">{selectedJob.title}</h2>
-<p>{selectedJob.details}</p>
-</div>
-)}
-</div>
-</div>
-</div>
-</main>
-);
+                <h2 className="text-xl font-bold mb-4">{selectedJob.title}</h2>
+                <p>{selectedJob.details}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </main>
+  );
 };
 
 export default Jobs;
