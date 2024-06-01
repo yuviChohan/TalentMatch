@@ -15,13 +15,13 @@ const Profile: React.FC = () => {
           {role === 'admin' && (
             <div>
               <button
-                className={`mx-2 p-2 ${!isAdmin ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'} rounded`}
+                className={`mx-2 p-2 ${!isAdmin ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'} rounded transition-colors duration-300`}
                 onClick={() => setIsAdmin(false)}
               >
                 User Profile
               </button>
               <button
-                className={`mx-2 p-2 ${isAdmin ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'} rounded`}
+                className={`mx-2 p-2 ${isAdmin ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'} rounded transition-colors duration-300`}
                 onClick={() => setIsAdmin(true)}
               >
                 Admin Profile

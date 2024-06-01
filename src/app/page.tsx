@@ -4,7 +4,7 @@ import './globals.css';
 import React, { useState } from 'react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
-import NavBar from './contexts/NavBar';
+import NavBar from './components/NavBar';
 import Footer from './components/Footer';
 import Home from './pages/index';
 import Jobs from './pages/jobs';

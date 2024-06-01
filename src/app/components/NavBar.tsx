@@ -14,7 +14,7 @@ const NavBar: React.FC<NavBarProps> = ({ links, setCurrentPage }) => {
       <nav className="flex justify-between items-center p-4 bg-white shadow-md">
         <div className="flex items-center">
           <a href="/" onClick={() => setCurrentPage('/')}>
-            <img src="/ShiftSixOs.png" alt="Logo" className="h-12 w-55" /> 
+            <img src="logo.png" alt="Logo" className="h-12 w-55" /> 
           </a>
         </div>
         <div className="flex items-center space-x-8 ml-auto"> 

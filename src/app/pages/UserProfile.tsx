@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const UserProfile: React.FC = () => {
   const [resume, setResume] = useState<File | null>(null);
   const [coverLetter, setCoverLetter] = useState<File | null>(null);
-  const [workHistory, setWorkHistory] = useState([{ company: '', role: '', duration: '', isSaved: false }]);
+  const [workHistory, setWorkHistory] = useState([{ company: '', role: '', duration: '', isSaved: false, isExpanded: true }]);
   const [skills, setSkills] = useState<string[]>([]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setFile: React.Dispatch<React.SetStateAction<File | null>>) => {
@@ -17,24 +17,35 @@ const UserProfile: React.FC = () => {
 
   const handleSaveWorkHistory = (index: number) => {
     const newWorkHistory = [...workHistory];
-    newWorkHistory[index].isSaved = true;
-    setWorkHistory(newWorkHistory);
+    const entry = newWorkHistory[index];
+    if (entry.company && entry.role && entry.duration) {
+      entry.isSaved = true;
+      entry.isExpanded = false;
+      setWorkHistory(newWorkHistory);
+    } else {
+      alert('Please fill in all fields before saving.');
+    }
   };
 
   const handleAddWorkHistory = () => {
-    if (workHistory[workHistory.length - 1].isSaved) {
-      setWorkHistory([...workHistory, { company: '', role: '', duration: '', isSaved: false }]);
-    }
+    setWorkHistory([...workHistory, { company: '', role: '', duration: '', isSaved: false, isExpanded: true }]);
   };
 
   const handleRemoveWorkHistoryFields = (index: number) => {
     const newWorkHistory = [...workHistory];
-    newWorkHistory[index] = { company: '', role: '', duration: '', isSaved: false };
+    newWorkHistory[index] = { company: '', role: '', duration: '', isSaved: false, isExpanded: true };
     setWorkHistory(newWorkHistory);
   };
 
-  const handleRemoveWorkHistory = (index: number) => {
-    const newWorkHistory = workHistory.filter((_, i) => i !== index);
+  const handleToggleExpand = (index: number) => {
+    const newWorkHistory = [...workHistory];
+    newWorkHistory[index].isExpanded = !newWorkHistory[index].isExpanded;
+    setWorkHistory(newWorkHistory);
+  };
+
+  const handleEditWorkHistoryField = (index: number, field: string, value: string) => {
+    const newWorkHistory = [...workHistory];
+    newWorkHistory[index][field] = value;
     setWorkHistory(newWorkHistory);
   };
 
@@ -51,13 +62,32 @@ const UserProfile: React.FC = () => {
   };
 
   const handleSaveProfile = () => {
-    // Handle the save logic here
+    // Save all changes here, including work history and skills.
+    const savedWorkHistory = workHistory.map((entry, index) => {
+      if (!entry.isSaved && entry.company && entry.role && entry.duration) {
+        handleSaveWorkHistory(index);
+      }
+      return entry;
+    });
+
+    setWorkHistory(savedWorkHistory);
     console.log('Resume:', resume);
     console.log('Cover Letter:', coverLetter);
-    console.log('Work History:', workHistory);
+    console.log('Work History:', savedWorkHistory);
     console.log('Skills:', skills);
     // Add your save logic (e.g., API call to save the data)
+    alert('Profile saved successfully.');
   };
+
+  useEffect(() => {
+    if (workHistory.length > 1) {
+      const lastEntry = workHistory[workHistory.length - 1];
+      if (!lastEntry.company && !lastEntry.role && !lastEntry.duration && !lastEntry.isSaved) {
+        const newWorkHistory = workHistory.slice(0, -1);
+        setWorkHistory(newWorkHistory);
+      }
+    }
+  }, [workHistory]);
 
   return (
     <div className="w-full max-w-4xl bg-white shadow-xl rounded-xl p-10">
@@ -90,55 +120,52 @@ const UserProfile: React.FC = () => {
         </div>
       </div>
       <div className="mb-4">
-      <label className="block text-gray-700 font-bold mb-2">Add Work History:</label>
+        <label className="block text-gray-700 font-bold mb-2">Add Work History:</label>
         {workHistory.map((item, index) => (
           <div key={index} className="border border-gray-300 rounded p-4 mb-2 relative">
-            <input
-              type="text"
-              placeholder="Company"
-              className="border border-gray-300 rounded p-2 mb-2 w-full text-black"
-              value={item.company}
-              onChange={(e) => {
-                const newWorkHistory = [...workHistory];
-                newWorkHistory[index].company = e.target.value;
-                setWorkHistory(newWorkHistory);
-              }}
-              disabled={item.isSaved}
-            />
-            <input
-              type="text"
-              placeholder="Role"
-              className="border border-gray-300 rounded p-2 mb-2 w-full text-black"
-              value={item.role}
-              onChange={(e) => {
-                const newWorkHistory = [...workHistory];
-                newWorkHistory[index].role = e.target.value;
-                setWorkHistory(newWorkHistory);
-              }}
-              disabled={item.isSaved}
-            />
-            <input
-              type="text"
-              placeholder="Duration"
-              className="border border-gray-300 rounded p-2 mb-2 w-full text-black"
-              value={item.duration}
-              onChange={(e) => {
-                const newWorkHistory = [...workHistory];
-                newWorkHistory[index].duration = e.target.value;
-                setWorkHistory(newWorkHistory);
-              }}
-              disabled={item.isSaved}
-            />
-            {!item.isSaved && (
-              <button
-                className="bg-green-500 text-white rounded px-4 py-2"
-                onClick={() => handleSaveWorkHistory(index)}
-              >
-                Save
-              </button>
-            )}
-            {item.isSaved && (
+            <div className="flex justify-between items-center mb-2">
+              <h2 className="text-lg font-bold text-gray-700">Work History {index + 1}</h2>
+              <div>
+                {item.isExpanded ? (
+                  <button className="text-blue-500" onClick={() => handleToggleExpand(index)}>
+                    Collapse
+                  </button>
+                ) : (
+                  <button className="text-blue-500" onClick={() => handleToggleExpand(index)}>
+                    Expand
+                  </button>
+                )}
+              </div>
+            </div>
+            {item.isExpanded && (
               <>
+                <input
+                  type="text"
+                  placeholder="Company"
+                  className="border border-gray-300 rounded p-2 mb-2 w-full text-black"
+                  value={item.company}
+                  onChange={(e) => handleEditWorkHistoryField(index, 'company', e.target.value)}
+                />
+                <input
+                  type="text"
+                  placeholder="Role"
+                  className="border border-gray-300 rounded p-2 mb-2 w-full text-black"
+                  value={item.role}
+                  onChange={(e) => handleEditWorkHistoryField(index, 'role', e.target.value)}
+                />
+                <input
+                  type="text"
+                  placeholder="Duration"
+                  className="border border-gray-300 rounded p-2 mb-2 w-full text-black"
+                  value={item.duration}
+                  onChange={(e) => handleEditWorkHistoryField(index, 'duration', e.target.value)}
+                />
+                <button
+                  className="bg-green-500 text-white rounded px-4 py-2"
+                  onClick={() => handleSaveWorkHistory(index)}
+                >
+                  Save
+                </button>
                 <button
                   className="bg-red-500 text-white rounded px-4 py-2 ml-2"
                   onClick={() => handleRemoveWorkHistoryFields(index)}
@@ -149,12 +176,12 @@ const UserProfile: React.FC = () => {
             )}
           </div>
         ))}
-        {workHistory[workHistory.length - 1]?.isSaved && (
+        {(workHistory.length === 0 || workHistory[workHistory.length - 1]?.isSaved) && (
           <button className="bg-blue-500 text-white rounded px-4 py-2" onClick={handleAddWorkHistory}>Add</button>
         )}
       </div>
       <div className="mb-4">
-       <label className="block text-gray-700 font-bold mb-2">Skills:</label>
+        <label className="block text-gray-700 font-bold mb-2">Skills:</label>
         <div className="flex flex-wrap gap-2 mb-2">
           {skills.map((skill, index) => (
             <div key={index} className="bg-gray-200 rounded px-4 py-2 flex items-center">
@@ -175,7 +202,9 @@ const UserProfile: React.FC = () => {
           onKeyDown={handleAddSkill}
         />
       </div>
-      <button className=" bg-blue-500 text-white rounded px-4 py-2" onClick={handleSaveProfile}>Save</button>
+      <div className="flex justify-center">
+        <button className="bg-blue-500 text-white rounded px-4 py-2" onClick={handleSaveProfile}>Save</button>
+      </div>
     </div>
   );
 };

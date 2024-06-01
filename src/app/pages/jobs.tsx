@@ -1,15 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import JobCard from '../components/JobCard';
- 
+import ApplicationPage from '../components/ApplicationPage';
+
 const Jobs: React.FC = () => {
   const [selectedJob, setSelectedJob] = useState<any>(null);
+  const [applyingJob, setApplyingJob] = useState<any>(null);
   const [jobTitle, setJobTitle] = useState<string>('');
   const [location, setLocation] = useState<string>('');
   const [jobType, setJobType] = useState<string>('');
   const [jobs, setJobs] = useState<any[]>([]);
   const [filteredJobs, setFilteredJobs] = useState<any[]>([]);
   const [sortOrder, setSortOrder] = useState<string>('lowToHigh');
- 
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [jobsPerPage] = useState<number>(5);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
   const jobList = [
     {
       title: 'QA Technician',
@@ -44,18 +50,26 @@ const Jobs: React.FC = () => {
       details: 'Detailed description for Graphic Designer.'
     },
     // Add more jobs as needed
-  ];  
- 
-  // Fetch jobs from backend API
+  ];
+
   useEffect(() => {
-    // Simulated fetch for demo purposes
-    setJobs(jobList);
-    setFilteredJobs(jobList);
+    const fetchJobs = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        setJobs(jobList);
+        setFilteredJobs(jobList);
+      } catch (error) {
+        setError('Error fetching jobs. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchJobs();
   }, []);
- 
-  // Handle search functionality
-  const handleSearch = async () => {
-    let filtered = jobList.filter(job => {
+
+  const handleSearch = () => {
+    const filtered = jobList.filter(job => {
       return (
         job.title.toLowerCase().includes(jobTitle.toLowerCase()) &&
         job.location.toLowerCase().includes(location.toLowerCase()) &&
@@ -63,9 +77,9 @@ const Jobs: React.FC = () => {
       );
     });
     setFilteredJobs(filtered);
+    setCurrentPage(1);
   };
- 
-  // Handle sorting by salary
+
   const sortBySalary = () => {
     const sorted = [...filteredJobs].sort((a, b) => {
       const salaryA = parseFloat(a.salary.split('$')[1]);
@@ -75,96 +89,167 @@ const Jobs: React.FC = () => {
     setFilteredJobs(sorted);
     setSortOrder(sortOrder === 'lowToHigh' ? 'highToLow' : 'lowToHigh');
   };
- 
+
   const handleApply = (job: any) => {
-    // Implement your apply logic here
-    console.log(`Applying for job: ${job.title}`);
+    setApplyingJob(job);
   };
- 
+
   const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
       handleSearch();
     }
   };
- 
+
+  const clearFilters = () => {
+    setJobTitle('');
+    setLocation('');
+    setJobType('');
+    setFilteredJobs(jobList);
+    setCurrentPage(1);
+  };
+
+  const indexOfLastJob = currentPage * jobsPerPage;
+  const indexOfFirstJob = indexOfLastJob - jobsPerPage;
+  const currentJobs = filteredJobs.slice(indexOfFirstJob, indexOfLastJob);
+
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
+  const handleGoBack = () => {
+    setApplyingJob(null);
+  };
+
+  if (applyingJob) {
+    return <ApplicationPage job={applyingJob} goBack={handleGoBack} />;
+  }
+
   return (
     <main className="flex flex-col items-center p-6 bg-gray-100 min-h-screen">
       <div className="w-full max-w-6xl bg-white shadow-md rounded-lg p-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-700">Jobs</h1>
-          <div className="flex items-center space-x-4">
-            <input
-              type="text"
-              placeholder="Job Title"
-              className="border border-gray-300 rounded p-2 text-gray-700"
-              value={jobTitle}
-              onChange={(e) => setJobTitle(e.target.value)}
-              onKeyPress={handleKeyPress}
-            />
-            <select
-              className="border border-gray-300 rounded p-2 text-gray-700"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              onKeyPress={handleKeyPress}
-            >
-              <option value="">Select Location</option>
-              <option value="Calgary, Alberta">Calgary, Alberta</option>
-              <option value="Vancouver, British Columbia">Vancouver, British Columbia</option>
-              <option value="Toronto, Ontario">Toronto, Ontario</option>
-              <option value="Montreal, Quebec">Montreal, Quebec</option>
-              <option value="Edmonton, Alberta">Edmonton, Alberta</option>
-              <option value="Ottawa, Ontario">Ottawa, Ontario</option>
-              <option value="Winnipeg, Manitoba">Winnipeg, Manitoba</option>
-              <option value="Quebec City, Quebec">Quebec City, Quebec</option>
-              <option value="Hamilton, Ontario">Hamilton, Ontario</option>
-              <option value="Halifax, Nova Scotia">Halifax, Nova Scotia</option>
-            </select>
-            <select
-              className="border border-gray-300 rounded p-2 text-gray-700"
-              value={jobType}
-              onChange={(e) => setJobType(e.target.value)}
-              onKeyPress={handleKeyPress}
-            >
-              <option value="">Select Type</option>
-              <option value="Full-time">Full-time</option>
-              <option value="Part-time">Part-time</option>
-              <option value="Contract">Contract</option>
-            </select>
-            <button onClick={handleSearch} className="bg-blue-500 text-white rounded px-4 py-2">Search</button>
-            <button onClick={sortBySalary} className="bg-blue-500 text-white rounded px-4 py-2">
-              Sort by Salary ({sortOrder === 'lowToHigh' ? 'Low to High' : 'High to Low'})
-            </button>
-          </div>
+        <h1 className="text-2xl font-bold mb-4 text-gray-800">Job Listings</h1>
+
+        <div className="flex flex-wrap justify-between items-center mb-6 space-y-4 md:space-y-0">
+          <input
+            type="text"
+            placeholder="Job Title"
+            className="border border-gray-300 rounded p-2 text-gray-700 flex-grow"
+            value={jobTitle}
+            onChange={(e) => setJobTitle(e.target.value)}
+            onKeyPress={handleKeyPress}
+          />
+          <select
+            className="border border-gray-300 rounded p-2 text-gray-700 flex-grow mx-2"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+          >
+            <option value="">Select Location</option>
+            <option value="Calgary, Alberta">Calgary, Alberta</option>
+            <option value="Vancouver, British Columbia">Vancouver, British Columbia</option>
+            <option value="Toronto, Ontario">Toronto, Ontario</option>
+            <option value="Montreal, Quebec">Montreal, Quebec</option>
+            <option value="Edmonton, Alberta">Edmonton, Alberta</option>
+            <option value="Ottawa, Ontario">Ottawa, Ontario</option>
+            <option value="Winnipeg, Manitoba">Winnipeg, Manitoba</option>
+            <option value="Quebec City, Quebec">Quebec City, Quebec</option>
+            <option value="Hamilton, Ontario">Hamilton, Ontario</option>
+            <option value="Halifax, Nova Scotia">Halifax, Nova Scotia</option>
+          </select>
+          <select
+            className="border border-gray-300 rounded p-2 text-gray-700 flex-grow"
+            value={jobType}
+            onChange={(e) => setJobType(e.target.value)}
+          >
+            <option value="">Select Type</option>
+            <option value="Full-time">Full-time</option>
+            <option value="Part-time">Part-time</option>
+            <option value="Contract">Contract</option>
+          </select>
+          <button
+            onClick={handleSearch}
+            className="bg-blue-500 text-white rounded px-4 py-2 ml-2"
+          >
+            Search
+          </button>
+          <button
+            onClick={clearFilters}
+            className="bg-gray-500 text-white rounded px-4 py-2 ml-2"
+          >
+            Clear
+          </button>
+          <button
+            onClick={sortBySalary}
+            className="bg-blue-500 text-white rounded px-4 py-2 ml-2"
+          >
+            Sort by Salary ({sortOrder === 'lowToHigh' ? 'Low to High' : 'High to Low'})
+          </button>
         </div>
- 
-        <div className="flex">
-          <div className="w-2/5 p-4">
-            {(filteredJobs.length > 0 ? filteredJobs : jobList).map((job, index) => (
-              <div key={index} className="mb-4" onClick={() => setSelectedJob(job)}>
-                <JobCard
-                  title={job.title}
-                  location={job.location}
-                  salary={job.salary}
-                  type={job.type}
-                  description={job.description}
-                />
-                <button onClick={() => handleApply(job)} className="bg-green-500 text-white rounded px-4 py-2 mt-2">Apply</button>
-              </div>
-            ))}
+
+        {loading ? (
+          <div className="flex justify-center items-center">
+            <div className="loader">Loading...</div>
           </div>
- 
-          <div className="w-3/5 p-4">
-            {selectedJob && (
-              <div className="bg-white p-6 rounded shadow-md">
-                <h2 className="text-xl font-bold mb-4">{selectedJob.title}</h2>
-                <p>{selectedJob.details}</p>
+        ) : error ? (
+          <div className="text-red-500">{error}</div>
+        ) : (
+          <div className="flex">
+            <div className="w-2/5 p-4">
+              {currentJobs.length > 0 ? (
+                currentJobs.map((job, index) => (
+                  <div key={index} className="mb-4" onClick={() => setSelectedJob(job)}>
+                    <JobCard
+                      title={job.title}
+                      location={job.location}
+                      salary={job.salary}
+                      type={job.type}
+                      description={`${job.description.substring(0, 100)}...`}
+                    />
+                  </div>
+                ))
+              ) : (
+                <div className="text-center text-gray-500 w-full">No job listings found.</div>
+              )}
+              <div className="flex justify-center space-x-2 mt-4">
+                {Array.from({ length: Math.ceil(filteredJobs.length / jobsPerPage) }, (_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => paginate(i + 1)}
+                    className={`px-4 py-2 rounded ${currentPage === i + 1 ? 'bg-blue-500 text-white' : 'bg-gray-300'}`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
               </div>
-            )}
+            </div>
+
+            <div className="w-3/5 p-4">
+              {selectedJob ? (
+                <div className="bg-white p-6 rounded shadow-md">
+                  <h2 className="text-xl font-bold mb-2 text-gray-800">{selectedJob.title}</h2>
+                  <p className="text-gray-700 mb-2">
+                    <strong>Location:</strong> {selectedJob.location}
+                  </p>
+                  <p className="text-gray-700 mb-2">
+                    <strong>Salary:</strong> {selectedJob.salary}
+                  </p>
+                  <p className="text-gray-700 mb-2">
+                    <strong>Type:</strong> {selectedJob.type}
+                  </p>
+                  <p className="text-gray-700 mb-4">{selectedJob.details}</p>
+                  <button
+                    onClick={() => handleApply(selectedJob)}
+                    className="bg-blue-500 text-white rounded px-4 py-2"
+                  >
+                    Apply Now
+                  </button>
+                </div>
+              ) : (
+                <div className="text-center text-gray-500">Select a job to view details.</div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </main>
   );
 };
- 
+
 export default Jobs;

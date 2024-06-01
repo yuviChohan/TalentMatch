@@ -107,27 +107,29 @@ const SignIn: React.FC = () => {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-6 bg-white">
-      <div className="w-full max-w-md bg-gradient-to-b from-blue-500 to-light-blue-500 shadow-md rounded-xl p-6">
+    <main className="flex min-h-screen items-center justify-center p-6 bg-gradient-to-r from-blue-500 to-light-blue-500">
+      <div className="w-full max-w-md bg-white shadow-lg rounded-lg p-8">
         <div className="flex justify-center mb-6">
-          <img src="ShiftSixOs.png" alt="Logo" className="h-16" /> 
+          <img src="logo.png" alt="Logo" className="h-16" />
         </div>
         {!showEmailForm && !isSignUp && (
           <>
-            <input 
-              type="text" 
-              placeholder="User name / Email" 
-              value={email} 
-              onChange={handleEmailChange} 
-              className="w-full p-3 mb-4 border border-gray-300 rounded-lg text-black"
-            />
-            <div className="relative">
-              <input 
-                type={showPassword ? "text" : "password"} 
-                placeholder="Password" 
-                value={password} 
-                onChange={handlePasswordChange} 
-                className="w-full p-3 mb-4 border border-gray-300 rounded-lg text-black"
+            <div className="mb-4">
+              <input
+                type="text"
+                placeholder="User name / Email"
+                value={email}
+                onChange={handleEmailChange}
+                className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+              />
+            </div>
+            <div className="relative mb-4">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                value={password}
+                onChange={handlePasswordChange}
+                className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
               />
               <button
                 type="button"
@@ -137,29 +139,29 @@ const SignIn: React.FC = () => {
                 {showPassword ? "🙈" : "👁️"}
               </button>
             </div>
-            <button 
-              onClick={signInWithEmail} 
+            <button
+              onClick={signInWithEmail}
               className="w-full p-3 mb-4 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors duration-300"
             >
               Sign In
             </button>
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center mb-4">
               <span></span>
-              <span 
-                onClick={() => setIsSignUp(true)} 
-                className="text-white cursor-pointer"
+              <span
+                onClick={() => setIsSignUp(true)}
+                className="text-blue-500 cursor-pointer hover:underline"
               >
                 Create an account
               </span>
             </div>
-            <button 
-              onClick={signInWithGoogle} 
-              className="w-full p-3 mb-4 mt-4 text-white bg-red-500 rounded-lg hover:bg-red-600 transition-colors duration-300"
+            <button
+              onClick={signInWithGoogle}
+              className="w-full p-3 mb-4 text-white bg-red-500 rounded-lg hover:bg-red-600 transition-colors duration-300"
             >
               Sign In with Google
             </button>
-            <button 
-              onClick={signInAnonymouslyHandler} 
+            <button
+              onClick={signInAnonymouslyHandler}
               className="w-full p-3 text-white bg-gray-500 rounded-lg hover:bg-gray-600 transition-colors duration-300"
             >
               Continue as Guest
@@ -169,29 +171,29 @@ const SignIn: React.FC = () => {
 
         {isSignUp && (
           <>
-            <button 
-              onClick={() => setShowEmailForm(true)} 
+            <button
+              onClick={() => setShowEmailForm(true)}
               className="w-full p-3 mb-4 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors duration-300"
             >
               Sign up with Email
             </button>
-            <button 
-              onClick={signInWithGoogle} 
+            <button
+              onClick={signInWithGoogle}
               className="w-full p-3 mb-4 text-white bg-red-500 rounded-lg hover:bg-red-600 transition-colors duration-300"
             >
               Sign up with Google
             </button>
-            <button 
-              onClick={signInAnonymouslyHandler} 
+            <button
+              onClick={signInAnonymouslyHandler}
               className="w-full p-3 mb-4 text-white bg-gray-500 rounded-lg hover:bg-gray-600 transition-colors duration-300"
             >
               Continue as guest
             </button>
             <div className="flex justify-between items-center">
               <span></span>
-              <span 
-                onClick={() => setIsSignUp(false)} 
-                className="text-white cursor-pointer"
+              <span
+                onClick={() => setIsSignUp(false)}
+                className="text-blue-500 cursor-pointer hover:underline"
               >
                 Already have an account? Sign in
               </span>
@@ -201,46 +203,48 @@ const SignIn: React.FC = () => {
 
         {showEmailForm && (
           <div className="w-full">
-            <input 
-              type="email" 
-              placeholder="Email" 
-              value={email} 
-              onChange={handleEmailChange} 
-              className="w-full p-3 mb-4 border border-gray-300 rounded-lg text-black"
-            />
-            <div className="relative">
-              <input 
-                type={showPassword ? "text" : "password"} 
-                placeholder="Password" 
-                value={password} 
-                onChange={handlePasswordChange} 
-                className="w-full p-3 mb-4 border border-gray-300 rounded-lg text-black"
+            <div className="mb-4">
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={handleEmailChange}
+                className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+              />
+            </div>
+            <div className="relative mb-4">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                value={password}
+                onChange={handlePasswordChange}
+                className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
               />
               <button
                 type="button"
                 onClick={togglePasswordVisibility}
-                className="absolute right-30 top-1/2 transform -translate-y-1/2 text-gray-600"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
               >
                 {showPassword ? "🙈" : "👁️"}
               </button>
             </div>
-            <button 
-              onClick={isSignUp ? signUpWithEmail : signInWithEmail} 
+            <button
+              onClick={isSignUp ? signUpWithEmail : signInWithEmail}
               className="w-full p-3 mb-4 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors duration-300"
             >
               {isSignUp ? "Sign up with Email" : "Sign in with Email"}
             </button>
-            <button 
-              onClick={() => setIsSignUp(!isSignUp)} 
+            <button
+              onClick={() => setIsSignUp(!isSignUp)}
               className="w-full p-3 mb-4 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors duration-300"
             >
               {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
             </button>
-            <button 
+            <button
               onClick={() => {
                 setShowEmailForm(false);
                 setIsSignUp(false);
-              }} 
+              }}
               className="w-full p-3 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors duration-300"
             >
               Cancel
@@ -248,7 +252,7 @@ const SignIn: React.FC = () => {
           </div>
         )}
 
-        {message && <p className="mt-4 text-red-500">{message}</p>}
+        {message && <p className="mt-4 text-red-500 text-center">{message}</p>}
       </div>
     </main>
   );
