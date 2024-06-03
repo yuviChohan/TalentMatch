@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import UserProfile from './UserProfile';
-import AdminProfile from './AdminProfile';
+import UserProfile from '../UserProfile/page';
+import AdminProfile from '../AdminProfile/page';
 import { useAuth } from '../contexts/AuthContext';
 
 const Profile: React.FC = () => {

@@ -3,9 +3,10 @@ import React from 'react';
 interface ApplicationPageProps {
   job: any;
   goBack: () => void;
+  navigateToProfile: () => void;
 }
 
-const ApplicationPage: React.FC<ApplicationPageProps> = ({ job, goBack }) => {
+const ApplicationPage: React.FC<ApplicationPageProps> = ({ job, goBack, navigateToProfile }) => {
   return (
     <main className="flex flex-col items-center p-6 bg-gray-100 min-h-screen">
       <div className="w-full max-w-6xl bg-white shadow-md rounded-lg p-8">
@@ -17,12 +18,9 @@ const ApplicationPage: React.FC<ApplicationPageProps> = ({ job, goBack }) => {
         <div className="flex flex-col items-center mb-8">
           <div className="flex items-center space-x-4">
             <div className="bg-blue-500 text-white rounded-full h-8 w-8 flex items-center justify-center">1</div>
-            <div className="text-lg text-gray-800">Select your resume</div>
+            <div className="text-lg text-gray-800">Check your information</div>
             <div className="bg-blue-500 h-1 w-24"></div>
             <div className="bg-gray-300 text-gray-500 rounded-full h-8 w-8 flex items-center justify-center">2</div>
-            <div className="text-lg text-gray-500">Check your information</div>
-            <div className="bg-gray-300 h-1 w-24"></div>
-            <div className="bg-gray-300 text-gray-500 rounded-full h-8 w-8 flex items-center justify-center">3</div>
             <div className="text-lg text-gray-500">Submit application</div>
           </div>
         </div>
@@ -30,29 +28,13 @@ const ApplicationPage: React.FC<ApplicationPageProps> = ({ job, goBack }) => {
         <div className="flex">
           <div className="w-2/5 p-4">
             <div className="mb-6">
-              <h2 className="text-lg font-bold text-gray-800 mb-4">Frequently used:</h2>
+              <h2 className="text-lg font-bold text-gray-800 mb-4">Your Resume:</h2>
               <div className="bg-gray-200 p-4 rounded-lg mb-4">
-                <div className="text-gray-800">User_QA_Technician.pdf</div>
-                <div className="text-sm text-gray-500">Last used on May 21</div>
+                <div className="text-gray-800">User_QA_Technician.pdf</div> {/* Change this to dynamically display the user's resume file name */}
               </div>
-            </div>
-            <div className="mb-6">
-              <h2 className="text-lg font-bold text-gray-800 mb-4">Saved in your profile:</h2>
-              <div className="bg-gray-200 p-4 rounded-lg mb-4">
-                <div className="text-gray-800">User_SD_Instructor.pdf</div>
-                <div className="text-sm text-gray-500">Last used on May 14</div>
+              <div className="flex justify-center">
+                <button onClick={navigateToProfile} className="bg-blue-500 text-white rounded px-4 py-2">Upload a new resume</button>
               </div>
-              <div className="bg-gray-200 p-4 rounded-lg mb-4">
-                <div className="text-gray-800">User_Academic_Chair.pdf</div>
-                <div className="text-sm text-gray-500">Last used on May 14</div>
-              </div>
-              <div className="bg-gray-200 p-4 rounded-lg mb-4">
-                <div className="text-gray-800">User_Buggy_Pusher.pdf</div>
-                <div className="text-sm text-gray-500">Last used on May 14</div>
-              </div>
-            </div>
-            <div className="flex justify-center">
-              <button className="bg-blue-500 text-white rounded px-4 py-2">Upload a new resume</button>
             </div>
           </div>
 

@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from 'react';
 
+interface WorkHistoryEntry {
+  company: string;
+  role: string;
+  duration: string;
+  isSaved: boolean;
+  isExpanded: boolean;
+}
+
 const UserProfile: React.FC = () => {
   const [firstName, setFirstName] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [resume, setResume] = useState<File | null>(null);
-  const [workHistory, setWorkHistory] = useState([{ company: '', role: '', duration: '', isSaved: false, isExpanded: true }]);
+  const [workHistory, setWorkHistory] = useState<WorkHistoryEntry[]>([{ company: '', role: '', duration: '', isSaved: false, isExpanded: true }]);
   const [skills, setSkills] = useState<string[]>([]);
   const [appliedJobs, setAppliedJobs] = useState<{ title: string; company: string; status: string; }[]>([]);
 
@@ -53,9 +61,9 @@ const UserProfile: React.FC = () => {
     setWorkHistory(newWorkHistory);
   };
 
-  const handleEditWorkHistoryField = (index: number, field: string, value: string) => {
+  const handleEditWorkHistoryField = (index: number, field: keyof WorkHistoryEntry, value: string) => {
     const newWorkHistory = [...workHistory];
-    newWorkHistory[index][field] = value;
+    newWorkHistory[index] = { ...newWorkHistory[index], [field]: value };
     setWorkHistory(newWorkHistory);
   };
 
@@ -207,8 +215,10 @@ const UserProfile: React.FC = () => {
             )}
           </div>
         ))}
-        {workHistory.length > 0 && workHistory[workHistory.length - 1].isSaved && (
-          <button className="bg-blue-500 text-white rounded px-4 py-2" onClick={handleAddWorkHistory}>Add</button>
+        {workHistory.every(item => item.isSaved) && (
+          <button className="bg-blue-500 text-white rounded px-4 py-2" onClick={handleAddWorkHistory}>
+            Add
+          </button>
         )}
       </div>
       <div className="mb-4">
