@@ -1,10 +1,21 @@
 import React, { useState, useEffect } from 'react';
 
 const UserProfile: React.FC = () => {
+  const [firstName, setFirstName] = useState<string>('');
+  const [lastName, setLastName] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
   const [resume, setResume] = useState<File | null>(null);
-  const [coverLetter, setCoverLetter] = useState<File | null>(null);
   const [workHistory, setWorkHistory] = useState([{ company: '', role: '', duration: '', isSaved: false, isExpanded: true }]);
   const [skills, setSkills] = useState<string[]>([]);
+  const [appliedJobs, setAppliedJobs] = useState<{ title: string; company: string; status: string; }[]>([]);
+
+  useEffect(() => {
+    setAppliedJobs([
+      { title: 'Software Engineer', company: 'Tech Solutions Inc.', status: 'Interview Scheduled' },
+      { title: 'QA Technician', company: 'Starfield Industry Ltd.', status: 'Applied' },
+      { title: 'Marketing Manager', company: 'Marketing Agency X', status: 'Rejected' },
+    ]);
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setFile: React.Dispatch<React.SetStateAction<File | null>>) => {
     if (e.target.files && e.target.files[0]) {
@@ -13,7 +24,6 @@ const UserProfile: React.FC = () => {
   };
 
   const handleRemoveResume = () => setResume(null);
-  const handleRemoveCoverLetter = () => setCoverLetter(null);
 
   const handleSaveWorkHistory = (index: number) => {
     const newWorkHistory = [...workHistory];
@@ -33,7 +43,7 @@ const UserProfile: React.FC = () => {
 
   const handleRemoveWorkHistoryFields = (index: number) => {
     const newWorkHistory = [...workHistory];
-    newWorkHistory[index] = { company: '', role: '', duration: '', isSaved: false, isExpanded: true };
+    newWorkHistory.splice(index, 1);
     setWorkHistory(newWorkHistory);
   };
 
@@ -71,12 +81,20 @@ const UserProfile: React.FC = () => {
     });
 
     setWorkHistory(savedWorkHistory);
+    console.log('First Name:', firstName);
+    console.log('Last Name:', lastName);
+    console.log('Email:', email);
     console.log('Resume:', resume);
-    console.log('Cover Letter:', coverLetter);
     console.log('Work History:', savedWorkHistory);
     console.log('Skills:', skills);
+    console.log('Applied Jobs:', appliedJobs);
     // Add your save logic (e.g., API call to save the data)
     alert('Profile saved successfully.');
+  };
+
+  const handleCheckJobStatus = () => {
+    alert('This will redirect to the job status page or open a modal with job status details.');
+    // Add logic to redirect or open modal for job status
   };
 
   useEffect(() => {
@@ -91,8 +109,40 @@ const UserProfile: React.FC = () => {
 
   return (
     <div className="w-full max-w-4xl bg-white shadow-xl rounded-xl p-10">
+      <div className="flex justify-between items-center mb-4">
+        <button className="bg-gray-500 text-white rounded px-4 py-2" onClick={handleCheckJobStatus}>
+          Your Applications
+        </button>
+      </div>
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
+          <label className="block text-gray-700 font-bold mb-2">First Name:</label>
+          <input
+            type="text"
+            className="border border-gray-300 rounded p-2 w-full text-black"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+          />
+        </div>
+        <div>
+          <label className="block text-gray-700 font-bold mb-2">Last Name:</label>
+          <input
+            type="text"
+            className="border border-gray-300 rounded p-2 w-full text-black"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+          />
+        </div>
+        <div className="col-span-2">
+          <label className="block text-gray-700 font-bold mb-2">Email:</label>
+          <input
+            type="email"
+            className="border border-gray-300 rounded p-2 w-full text-black"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
+        <div className="col-span-2">
           <label className="block text-gray-700 font-bold mb-2">Add Resume:</label>
           <label className="block border border-gray-300 rounded p-4 text-center cursor-pointer hover:bg-gray-200">
             <input
@@ -105,19 +155,6 @@ const UserProfile: React.FC = () => {
           </label>
           {resume && <button className="text-red-500 mt-2" onClick={handleRemoveResume}>Remove</button>}
         </div>
-        <div>
-          <label className="block text-gray-700 font-bold mb-2">Add Cover Letter:</label>
-          <label className="block border border-gray-300 rounded p-4 text-center cursor-pointer hover:bg-gray-200">
-            <input
-              type="file"
-              accept=".pdf, .doc, .docx"
-              className="hidden"
-              onChange={(e) => handleFileChange(e, setCoverLetter)}
-            />
-            <span className="text-gray-500">{coverLetter ? coverLetter.name : "Click to upload"}</span>
-          </label>
-          {coverLetter && <button className="text-red-500 mt-2" onClick={handleRemoveCoverLetter}>Remove</button>}
-        </div>
       </div>
       <div className="mb-4">
         <label className="block text-gray-700 font-bold mb-2">Add Work History:</label>
@@ -125,17 +162,11 @@ const UserProfile: React.FC = () => {
           <div key={index} className="border border-gray-300 rounded p-4 mb-2 relative">
             <div className="flex justify-between items-center mb-2">
               <h2 className="text-lg font-bold text-gray-700">Work History {index + 1}</h2>
-              <div>
-                {item.isExpanded ? (
-                  <button className="text-blue-500" onClick={() => handleToggleExpand(index)}>
-                    Collapse
-                  </button>
-                ) : (
-                  <button className="text-blue-500" onClick={() => handleToggleExpand(index)}>
-                    Expand
-                  </button>
-                )}
-              </div>
+              {item.isSaved && (
+                <button className="text-blue-500" onClick={() => handleToggleExpand(index)}>
+                  {item.isExpanded ? 'Collapse' : 'Expand'}
+                </button>
+              )}
             </div>
             {item.isExpanded && (
               <>
@@ -176,7 +207,7 @@ const UserProfile: React.FC = () => {
             )}
           </div>
         ))}
-        {(workHistory.length === 0 || workHistory[workHistory.length - 1]?.isSaved) && (
+        {workHistory.length > 0 && workHistory[workHistory.length - 1].isSaved && (
           <button className="bg-blue-500 text-white rounded px-4 py-2" onClick={handleAddWorkHistory}>Add</button>
         )}
       </div>
@@ -199,11 +230,13 @@ const UserProfile: React.FC = () => {
           type="text"
           placeholder="Add a skill and press Enter"
           className="border border-gray-300 rounded p-2 w-full text-black"
-          onKeyDown={handleAddSkill}
+          onKeyPress={handleAddSkill}
         />
       </div>
       <div className="flex justify-center">
-        <button className="bg-blue-500 text-white rounded px-4 py-2" onClick={handleSaveProfile}>Save</button>
+        <button className="bg-blue-500 text-white rounded px-4 py-2" onClick={handleSaveProfile}>
+          Save Profile
+        </button>
       </div>
     </div>
   );
