@@ -31,7 +31,7 @@ const Jobs: React.FC = () => {
       salary: 'From $40 an hour',
       type: 'Full-time',
       description: 'Tech Solutions Inc. - Develop and maintain software applications. Competitive pay and benefits. Positive and fun work environment.',
-      details: 'Detailed description for Software Engineer.'
+      details: 'Tech Solutions Inc. - Wage: $40/hour. Status: Full-time, Permanent. Responsibilities: Develop and maintain software applications, collaborate with cross-functional teams, perform code reviews, and ensure high-quality code. Requirements: Bachelor\'s degree in Computer Science or related field, proficiency in JavaScript and Python, experience with React and Node.js, and excellent problem-solving skills.'
     },
     {
       title: 'Marketing Manager',
@@ -39,7 +39,7 @@ const Jobs: React.FC = () => {
       salary: 'From $50 an hour',
       type: 'Full-time',
       description: 'Marketing Agency X - Lead marketing campaigns and strategies. Competitive pay and benefits. Collaborative work environment.',
-      details: 'Detailed description for Marketing Manager.'
+      details: 'Marketing Agency X - Wage: $50/hour. Status: Full-time, Permanent. Responsibilities: Lead and manage marketing campaigns, develop marketing strategies, analyze market trends, and collaborate with the sales team. Requirements: Bachelor\'s degree in Marketing or related field, proven experience in marketing management, strong analytical skills, and excellent communication skills.'
     },
     {
       title: 'Graphic Designer',
@@ -47,7 +47,7 @@ const Jobs: React.FC = () => {
       salary: 'From $25 an hour',
       type: 'Part-time',
       description: 'Creative Studio Y - Design visual content for various projects. Flexible schedule. Creative and dynamic team.',
-      details: 'Detailed description for Graphic Designer.'
+      details: 'Creative Studio Y - Wage: $25/hour. Status: Part-time. Responsibilities: Design visual content for websites, social media, and print materials, collaborate with the creative team, and ensure brand consistency. Requirements: Bachelor\'s degree in Graphic Design or related field, proficiency in Adobe Creative Suite, strong portfolio, and excellent attention to detail.'
     },
     // Add more jobs as needed
   ];
@@ -80,14 +80,14 @@ const Jobs: React.FC = () => {
     setCurrentPage(1);
   };
 
-  const sortBySalary = () => {
+  const sortBySalary = (order: string) => {
     const sorted = [...filteredJobs].sort((a, b) => {
       const salaryA = parseFloat(a.salary.split('$')[1]);
       const salaryB = parseFloat(b.salary.split('$')[1]);
-      return sortOrder === 'lowToHigh' ? salaryA - salaryB : salaryB - salaryA;
+      return order === 'lowToHigh' ? salaryA - salaryB : salaryB - salaryA;
     });
     setFilteredJobs(sorted);
-    setSortOrder(sortOrder === 'lowToHigh' ? 'highToLow' : 'lowToHigh');
+    setSortOrder(order);
   };
 
   const handleApply = (job: any) => {
@@ -175,12 +175,13 @@ const Jobs: React.FC = () => {
           >
             Clear
           </button>
-          <button
-            onClick={sortBySalary}
+          <select
+            onChange={(e) => sortBySalary(e.target.value)}
             className="bg-blue-500 text-white rounded px-4 py-2 ml-2"
           >
-            Sort by Salary ({sortOrder === 'lowToHigh' ? 'Low to High' : 'High to Low'})
-          </button>
+            <option value="lowToHigh">Sort by Salary: Low to High</option>
+            <option value="highToLow">Sort by Salary: High to Low</option>
+          </select>
         </div>
 
         {loading ? (

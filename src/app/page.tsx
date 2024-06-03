@@ -1,26 +1,27 @@
 "use client";
+
 // src/app/page.tsx
-import './globals.css'; 
+import './globals.css';
 import React, { useState } from 'react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
-import NavBar from './components/NavBar';
-import Footer from './components/Footer';
-import Home from './pages/index';
-import Jobs from './pages/jobs';
-import Profile from './pages/profile';
-import Admin from './pages/AdminProfile';
-import SignIn from './pages/signin';
+import NavBar from './components/NavBar';  // Adjusted import for NavBar
+import Footer from './components/Footer';  // Adjusted import for Footer
+import Home from './Index/page';  // Adjusted import for Home
+import Jobs from './Jobs/page';  // Adjusted import for Jobs
+import Profile from './Profile/page';  // Adjusted import for Profile
+import Admin from './AdminProfile/page';  // Adjusted import for Admin
+import SignIn from './SignIn/page';  // Adjusted import for SignIn
 
 const Page: React.FC = () => {
   const [currentPage, setCurrentPage] = useState('home');
-  
+
   const links = [
     { name: 'Home', path: 'home' },
     { name: 'Jobs', path: 'jobs' },
     { name: 'Profile', path: 'profile' },
     { name: 'Sign In', path: 'signin' },
-    { name: 'Sign Up', path: 'signup' }, 
+    { name: 'Sign Up', path: 'signup' },
   ];
 
   const renderPage = () => {
