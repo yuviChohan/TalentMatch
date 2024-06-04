@@ -5,11 +5,16 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthP
 const SignIn: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [showAdditionalInfo, setShowAdditionalInfo] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -24,6 +29,22 @@ const SignIn: React.FC = () => {
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
+  };
+
+  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setConfirmPassword(e.target.value);
+  };
+
+  const handleFirstNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFirstName(e.target.value);
+  };
+
+  const handleLastNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLastName(e.target.value);
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPhone(e.target.value);
   };
 
   const togglePasswordVisibility = () => {
@@ -44,6 +65,11 @@ const SignIn: React.FC = () => {
   };
 
   const signUpWithEmail = () => {
+    if (password !== confirmPassword) {
+      setMessage("Passwords do not match.");
+      return;
+    }
+
     createUserWithEmailAndPassword(auth, email, password)
       .then(async (userCredential) => {
         const user = userCredential.user;
@@ -64,7 +90,7 @@ const SignIn: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ uid: user.uid, email: user.email }),
+        body: JSON.stringify({ uid: user.uid, email: user.email, firstName, lastName, phone }),
       });
       if (response.ok) {
         console.log("User saved to database");
@@ -83,6 +109,7 @@ const SignIn: React.FC = () => {
         const user = result.user;
         console.log(user);
         setMessage("Signed in with Google!");
+        setShowAdditionalInfo(true);
       })
       .catch((error) => {
         console.error(error);
@@ -112,6 +139,22 @@ const SignIn: React.FC = () => {
         console.error(error);
         setMessage(error.message);
       });
+  };
+
+  const handleAdditionalInfoSubmit = async () => {
+    if (password !== confirmPassword) {
+      setMessage("Passwords do not match.");
+      return;
+    }
+
+    try {
+      await saveUserToDatabase(user);
+      setShowAdditionalInfo(false);
+      setMessage("Signed up with Google!");
+    } catch (error) {
+      console.error(error);
+      setMessage("Error saving user to database.");
+    }
   };
 
   return (
@@ -203,12 +246,6 @@ const SignIn: React.FC = () => {
                 >
                   Sign up with Google
                 </button>
-                <button
-                  onClick={signInAnonymouslyHandler}
-                  className="w-full p-3 mb-4 text-white bg-gray-500 rounded-lg hover:bg-gray-600 transition-colors duration-300"
-                >
-                  Continue as guest
-                </button>
                 <div className="flex justify-between items-center">
                   <span></span>
                   <span
@@ -223,6 +260,33 @@ const SignIn: React.FC = () => {
 
             {showEmailForm && (
               <div className="w-full">
+                <div className="mb-4">
+                  <input
+                    type="text"
+                    placeholder="First Name"
+                    value={firstName}
+                    onChange={handleFirstNameChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+                  />
+                </div>
+                <div className="mb-4">
+                  <input
+                    type="text"
+                    placeholder="Last Name"
+                    value={lastName}
+                    onChange={handleLastNameChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+                  />
+                </div>
+                <div className="mb-4">
+                  <input
+                    type="text"
+                    placeholder="Phone Number (Optional)"
+                    value={phone}
+                    onChange={handlePhoneChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+                  />
+                </div>
                 <div className="mb-4">
                   <input
                     type="email"
@@ -248,17 +312,33 @@ const SignIn: React.FC = () => {
                     {showPassword ? "🙈" : "👁️"}
                   </button>
                 </div>
+                <div className="relative mb-4">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Confirm Password"
+                    value={confirmPassword}
+                    onChange={handleConfirmPasswordChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+                  />
+                  <button
+                    type="button"
+                    onClick={togglePasswordVisibility}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
+                  >
+                    {showPassword ? "🙈" : "👁️"}
+                  </button>
+                </div>
                 <button
-                  onClick={isSignUp ? signUpWithEmail : signInWithEmail}
+                  onClick={signUpWithEmail}
                   className="w-full p-3 mb-4 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors duration-300"
                 >
-                  {isSignUp ? "Sign up with Email" : "Sign in with Email"}
+                  Sign up with Email
                 </button>
                 <button
-                  onClick={() => setIsSignUp(!isSignUp)}
+                  onClick={() => setIsSignUp(false)}
                   className="w-full p-3 mb-4 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors duration-300"
                 >
-                  {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
+                  Already have an account? Sign in
                 </button>
                 <button
                   onClick={() => {
@@ -272,6 +352,79 @@ const SignIn: React.FC = () => {
               </div>
             )}
           </>
+        )}
+
+        {showAdditionalInfo && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
+            <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+              <h2 className="text-2xl font-bold mb-4">Additional Information</h2>
+              <div className="mb-4">
+                <input
+                  type="text"
+                  placeholder="First Name"
+                  value={firstName}
+                  onChange={handleFirstNameChange}
+                  className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+                />
+              </div>
+              <div className="mb-4">
+                <input
+                  type="text"
+                  placeholder="Last Name"
+                  value={lastName}
+                  onChange={handleLastNameChange}
+                  className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+                />
+              </div>
+              <div className="mb-4">
+                <input
+                  type="text"
+                  placeholder="Phone Number (Optional)"
+                  value={phone}
+                  onChange={handlePhoneChange}
+                  className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+                />
+              </div>
+              <div className="relative mb-4">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  value={password}
+                  onChange={handlePasswordChange}
+                  className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+                />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
+                >
+                  {showPassword ? "🙈" : "👁️"}
+                </button>
+              </div>
+              <div className="relative mb-4">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Confirm Password"
+                  value={confirmPassword}
+                  onChange={handleConfirmPasswordChange}
+                  className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+                />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
+                >
+                  {showPassword ? "🙈" : "👁️"}
+                </button>
+              </div>
+              <button
+                onClick={handleAdditionalInfoSubmit}
+                className="w-full p-3 mb-4 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors duration-300"
+              >
+                Submit
+              </button>
+            </div>
+          </div>
         )}
 
         {message && <p className="mt-4 text-red-500 text-center">{message}</p>}
