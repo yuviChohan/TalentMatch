@@ -1,3 +1,4 @@
+//This is just to create a pull request for the new branch
 import React, { useState, useEffect } from 'react';
 import { auth } from "../firebase";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInAnonymously, signOut, onAuthStateChanged } from "firebase/auth";
