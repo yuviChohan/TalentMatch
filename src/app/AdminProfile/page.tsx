@@ -1,33 +1,37 @@
+// src/app/AdminProfile/page.tsx
+"use client";
 import React from 'react';
 
 const AdminProfile: React.FC = () => {
   return (
     <div className="w-full max-w-4xl bg-white shadow-xl rounded-xl p-10">
-      <h1 className="text-5xl font-extrabold mb-8 text-gray-800">Admin Profile</h1>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="flex flex-col items-center">
-          <img src="/path/to/admin-icon.png" alt="Admin Icon" className="h-32 w-32 mb-4" /> {/* Adjust the path to your admin icon */}
-          <button className="bg-blue-500 text-white rounded px-4 py-2">Update/Add Profile Picture</button>
+      <div className="grid grid-cols-2 gap-8">
+        <div className="flex flex-col items-center border p-6 rounded-lg shadow-md bg-gray-50">
+          <div className="w-32 h-32 mb-4 border-4 border-gray-300 rounded-full overflow-hidden">
+            <img src="/path/to/admin-icon.png" alt="Admin Icon" className="w-full h-full object-cover" /> {/* Adjust the path to your admin icon */}
+          </div>
+          <button className="bg-blue-500 text-white rounded px-4 py-2 mt-4 hover:bg-blue-600 transition duration-300">Update/Add Profile Picture</button>
           <input type="text" placeholder="LinkedIn Profile URL" className="border border-gray-300 rounded p-2 mt-4 w-full text-black" />
-          <button className="bg-black text-white rounded px-4 py-2 mt-4">Submit</button>
+          <button className="bg-black text-white rounded px-4 py-2 mt-4 hover:bg-gray-800 transition duration-300">Submit</button>
         </div>
-        <div>
+        <div className="flex flex-col bg-gray-50 p-6 rounded-lg shadow-md">
           <div className="mb-4">
-            <label className="block text-gray-700">Edit Email Address:</label>
+            <label className="block text-gray-700 font-semibold mb-2">Email Address:</label>
             <input type="email" placeholder="admin@gmail.com" className="border border-gray-300 rounded p-2 w-full text-black" />
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700">Edit Mobile Number:</label>
+            <label className="block text-gray-700 font-semibold mb-2">Mobile Number:</label>
             <input type="text" placeholder="(000)-000-0000" className="border border-gray-300 rounded p-2 w-full text-black" />
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700">Edit Address:</label>
+            <label className="block text-gray-700 font-semibold mb-2">Address:</label>
             <input type="text" placeholder="XYZ - Admin Road, AB Canada" className="border border-gray-300 rounded p-2 w-full text-black" />
           </div>
-          <button className="bg-black text-white rounded px-4 py-2">Contact Technical Department</button>
         </div>
       </div>
-      <button className="bg-gray-700 text-white rounded px-4 py-2 mt-4">Sign Out</button>
+      <div className="flex justify-end mt-6">
+        <button className="bg-blue-500 text-white rounded px-6 py-2 hover:bg-blue-600 transition duration-300">Save Profile</button>
+      </div>
     </div>
   );
 };
