@@ -1,6 +1,8 @@
+"use client";
 import React, { useState, useEffect } from 'react';
 import { auth } from "../firebase";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInAnonymously, signOut, onAuthStateChanged } from "firebase/auth";
+import { set } from 'firebase/database';
 
 const SignIn: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -9,12 +11,14 @@ const SignIn: React.FC = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
+  const [dob, setDob] = useState("");
   const [message, setMessage] = useState("");
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [showAdditionalInfo, setShowAdditionalInfo] = useState(false);
+  const [userInfo, setUserInfo] = useState({"name": "", "dob": "", "uid": "", "is_owner": false, "is_admin": false, "phone_number": "", "email": "" });
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -37,15 +41,24 @@ const SignIn: React.FC = () => {
 
   const handleFirstNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFirstName(e.target.value);
+    setUserInfo({...userInfo, "name": e.target.value + " " + lastName});
   };
 
   const handleLastNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLastName(e.target.value);
+    setUserInfo({...userInfo, "name": firstName + " " + e.target.value});
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPhone(e.target.value);
+    setUserInfo({...userInfo, "phone_number": e.target.value});
   };
+
+  const handleDobChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDob(e.target.value);
+    setUserInfo({...userInfo, "dob": e.target.value.split('-').reverse().join('')});
+  };
+  
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -75,7 +88,8 @@ const SignIn: React.FC = () => {
         const user = userCredential.user;
         console.log(user);
         setMessage("Signed up with email!");
-        await saveUserToDatabase(user);
+        setUserInfo({"name": firstName + " " + lastName, "dob": dob, "uid": user.uid, "is_owner": false, "is_admin": false, "phone_number": phone, "email": email });
+        saveUserToDatabase();
       })
       .catch((error) => {
         console.error(error);
@@ -83,14 +97,22 @@ const SignIn: React.FC = () => {
       });
   };
 
-  const saveUserToDatabase = async (user) => {
+  const saveUserToDatabase = async () => {
     try {
-      const response = await fetch('/api/saveUser', {
+      const response = await fetch('https://resumegraderapi.onrender.com/upload/user', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ uid: user.uid, email: user.email, firstName, lastName, phone }),
+        body: JSON.stringify({
+          "name": userInfo.name,
+          "dob": userInfo.dob.split('-').reverse().join(''), // Assuming dob is in YYYY-MM-DD format
+          "uid": userInfo.uid,
+          "is_owner": false,
+          "is_admin": false,
+          "phone_number": userInfo.phone_number,
+          "email": userInfo.email
+        }),
       });
       if (response.ok) {
         console.log("User saved to database");
@@ -101,20 +123,42 @@ const SignIn: React.FC = () => {
       console.error("Error saving user to database", error);
     }
   };
+  
 
   const signInWithGoogle = () => {
     const googleProvider = new GoogleAuthProvider();
     signInWithPopup(auth, googleProvider)
       .then((result) => {
         const user = result.user;
-        console.log(user);
-        setMessage("Signed in with Google!");
-        setShowAdditionalInfo(true);
+        console.log(user);  // Log the user object to check its properties
+        
+        
+          setMessage("Signed in with Google!");
+          if (user) {
+              setUserInfo({
+                "name": user.displayName || "", 
+                "dob": dob, 
+                "uid": user.uid, 
+                "is_owner": false, 
+                "is_admin": false, 
+                "phone_number": phone, 
+                "email": user.email || ""
+              });
+              if (isSignUp) {
+                setShowAdditionalInfo(true);
+              }
+        } 
       })
       .catch((error) => {
         console.error(error);
         setMessage(error.message);
       });
+  };
+  
+
+  const signUpWithGoogle = () => {
+    setIsSignUp(true);
+    signInWithGoogle();
   };
 
   const signInAnonymouslyHandler = () => {
@@ -142,13 +186,13 @@ const SignIn: React.FC = () => {
   };
 
   const handleAdditionalInfoSubmit = async () => {
-    if (password !== confirmPassword) {
-      setMessage("Passwords do not match.");
+    if (!firstName || !lastName || !dob) {
+      setMessage("Please fill in all required fields.");
       return;
     }
 
     try {
-      await saveUserToDatabase(user);
+      await saveUserToDatabase();
       setShowAdditionalInfo(false);
       setMessage("Signed up with Google!");
     } catch (error) {
@@ -156,6 +200,9 @@ const SignIn: React.FC = () => {
       setMessage("Error saving user to database.");
     }
   };
+
+  const currentDate = new Date().toISOString().split('T')[0];
+  const minDate = "1909-01-01";
 
   return (
     <main className="flex min-h-screen items-center justify-center p-6 bg-gradient-to-r from-blue-500 to-light-blue-500">
@@ -241,19 +288,13 @@ const SignIn: React.FC = () => {
                   Sign up with Email
                 </button>
                 <button
-                  onClick={signInWithGoogle}
+                  onClick={signUpWithGoogle}
                   className="w-full p-3 mb-4 text-white bg-red-500 rounded-lg hover:bg-red-600 transition-colors duration-300"
                 >
                   Sign up with Google
                 </button>
                 <div className="flex justify-between items-center">
-                  <span></span>
-                  <span
-                    onClick={() => setIsSignUp(false)}
-                    className="text-blue-500 cursor-pointer hover:underline"
-                  >
-                    Already have an account? Sign in
-                  </span>
+                  
                 </div>
               </>
             )}
@@ -285,6 +326,17 @@ const SignIn: React.FC = () => {
                     value={phone}
                     onChange={handlePhoneChange}
                     className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+                  />
+                </div>
+                <div className="mb-4">
+                  <input
+                    type="date"
+                    placeholder="Date of Birth"
+                    value={dob}
+                    onChange={handleDobChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+                    max={currentDate}
+                    min={minDate}
                   />
                 </div>
                 <div className="mb-4">
@@ -335,12 +387,6 @@ const SignIn: React.FC = () => {
                   Sign up with Email
                 </button>
                 <button
-                  onClick={() => setIsSignUp(false)}
-                  className="w-full p-3 mb-4 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors duration-300"
-                >
-                  Already have an account? Sign in
-                </button>
-                <button
                   onClick={() => {
                     setShowEmailForm(false);
                     setIsSignUp(false);
@@ -385,37 +431,16 @@ const SignIn: React.FC = () => {
                   className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
                 />
               </div>
-              <div className="relative mb-4">
+              <div className="mb-4">
                 <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Password"
-                  value={password}
-                  onChange={handlePasswordChange}
+                  type="date"
+                  placeholder="Date of Birth"
+                  value={dob}
+                  onChange={handleDobChange}
                   className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+                  max={currentDate}
+                  min={minDate}
                 />
-                <button
-                  type="button"
-                  onClick={togglePasswordVisibility}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
-                >
-                  {showPassword ? "🙈" : "👁️"}
-                </button>
-              </div>
-              <div className="relative mb-4">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Confirm Password"
-                  value={confirmPassword}
-                  onChange={handleConfirmPasswordChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
-                />
-                <button
-                  type="button"
-                  onClick={togglePasswordVisibility}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
-                >
-                  {showPassword ? "🙈" : "👁️"}
-                </button>
               </div>
               <button
                 onClick={handleAdditionalInfoSubmit}

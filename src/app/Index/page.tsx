@@ -1,4 +1,4 @@
-// src/app/pages/index.tsx
+// src/app/Index/page.tsx
 import React from 'react';
 import Loading from '../components/Loading';
 import Error from '../components/Error';

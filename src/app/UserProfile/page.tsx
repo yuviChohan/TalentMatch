@@ -1,21 +1,32 @@
+// src/app/UserProfile/page.tsx
+"use client";
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface WorkHistoryEntry {
   company: string;
   role: string;
-  duration: string;
+  startDate: string;
+  endDate: string;
+  currentlyWorking: boolean;
   isSaved: boolean;
   isExpanded: boolean;
 }
 
 const UserProfile: React.FC = () => {
+  const { uid } = useAuth();
   const [firstName, setFirstName] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [resume, setResume] = useState<File | null>(null);
-  const [workHistory, setWorkHistory] = useState<WorkHistoryEntry[]>([{ company: '', role: '', duration: '', isSaved: false, isExpanded: true }]);
+  const [workHistory, setWorkHistory] = useState<WorkHistoryEntry[]>([
+    { company: '', role: '', startDate: '', endDate: '', currentlyWorking: false, isSaved: false, isExpanded: true }
+  ]);
   const [skills, setSkills] = useState<string[]>([]);
   const [appliedJobs, setAppliedJobs] = useState<{ title: string; company: string; status: string; }[]>([]);
+
+  const currentDate = new Date().toISOString().split('T')[0];
+  const minDate = new Date(new Date().setFullYear(new Date().getFullYear() - 50)).toISOString().split('T')[0];
 
   useEffect(() => {
     setAppliedJobs([
@@ -25,9 +36,52 @@ const UserProfile: React.FC = () => {
     ]);
   }, []);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setFile: React.Dispatch<React.SetStateAction<File | null>>) => {
+  // Call API to extract resume data
+  const uploadResumeAndExtractData = async (apiKey: string, uid: string, file: File) => {
+    const formData = new FormData();
+    formData.append('apiKey', apiKey);
+    formData.append('uid', uid);
+    formData.append('file', file);
+  
+    try {
+      const response = await fetch('https://resumegraderapi.onrender.com/extract/resume', {
+        method: 'POST',
+        body: formData,
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to extract resume data');
+      }
+  
+      const data = await response.json();
+      return data; // Return the extracted data
+    } catch (error) {
+      console.error('Error extracting resume data:', error);
+      throw error;
+    }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, setResume: React.Dispatch<React.SetStateAction<File | null>>) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+      const uploadedFile = e.target.files[0];
+      setResume(uploadedFile);
+
+      try {
+        const userUid = uid;
+        if (!userUid) {
+          throw new Error('User UID not available');
+        }
+        console.log('API:', process.env.REACT_APP_OPENAI_RESUMEGRADER_APIKEY);
+        const resumeGraderApiKey = process.env.REACT_APP_OPENAI_RESUMEGRADER_APIKEY;
+        if (!resumeGraderApiKey) {
+          throw new Error('API key not available');
+        }
+
+        const data = await uploadResumeAndExtractData(resumeGraderApiKey, userUid, uploadedFile);
+        console.log('Extracted Resume Data:', data); // Update state with extracted skills, experience, etc.
+      } catch (error) {
+        console.error('Error extracting resume:', error);
+      }
     }
   };
 
@@ -36,7 +90,7 @@ const UserProfile: React.FC = () => {
   const handleSaveWorkHistory = (index: number) => {
     const newWorkHistory = [...workHistory];
     const entry = newWorkHistory[index];
-    if (entry.company && entry.role && entry.duration) {
+    if (entry.company && entry.role && entry.startDate && (entry.endDate || entry.currentlyWorking)) {
       entry.isSaved = true;
       entry.isExpanded = false;
       setWorkHistory(newWorkHistory);
@@ -46,7 +100,7 @@ const UserProfile: React.FC = () => {
   };
 
   const handleAddWorkHistory = () => {
-    setWorkHistory([...workHistory, { company: '', role: '', duration: '', isSaved: false, isExpanded: true }]);
+    setWorkHistory([...workHistory, { company: '', role: '', startDate: '', endDate: '', currentlyWorking: false, isSaved: false, isExpanded: true }]);
   };
 
   const handleRemoveWorkHistoryFields = (index: number) => {
@@ -61,7 +115,7 @@ const UserProfile: React.FC = () => {
     setWorkHistory(newWorkHistory);
   };
 
-  const handleEditWorkHistoryField = (index: number, field: keyof WorkHistoryEntry, value: string) => {
+  const handleEditWorkHistoryField = (index: number, field: keyof WorkHistoryEntry, value: string | boolean) => {
     const newWorkHistory = [...workHistory];
     newWorkHistory[index] = { ...newWorkHistory[index], [field]: value };
     setWorkHistory(newWorkHistory);
@@ -80,9 +134,8 @@ const UserProfile: React.FC = () => {
   };
 
   const handleSaveProfile = () => {
-    // Save all changes here, including work history and skills.
     const savedWorkHistory = workHistory.map((entry, index) => {
-      if (!entry.isSaved && entry.company && entry.role && entry.duration) {
+      if (!entry.isSaved && entry.company && entry.role && entry.startDate && (entry.endDate || entry.currentlyWorking)) {
         handleSaveWorkHistory(index);
       }
       return entry;
@@ -108,7 +161,7 @@ const UserProfile: React.FC = () => {
   useEffect(() => {
     if (workHistory.length > 1) {
       const lastEntry = workHistory[workHistory.length - 1];
-      if (!lastEntry.company && !lastEntry.role && !lastEntry.duration && !lastEntry.isSaved) {
+      if (!lastEntry.company && !lastEntry.role && !lastEntry.startDate && !lastEntry.endDate && !lastEntry.isSaved) {
         const newWorkHistory = workHistory.slice(0, -1);
         setWorkHistory(newWorkHistory);
       }
@@ -192,13 +245,39 @@ const UserProfile: React.FC = () => {
                   value={item.role}
                   onChange={(e) => handleEditWorkHistoryField(index, 'role', e.target.value)}
                 />
-                <input
-                  type="text"
-                  placeholder="Duration"
-                  className="border border-gray-300 rounded p-2 mb-2 w-full text-black"
-                  value={item.duration}
-                  onChange={(e) => handleEditWorkHistoryField(index, 'duration', e.target.value)}
-                />
+                <div className="mb-2">
+                  <label className="block text-gray-700 mb-2">Start Date:</label>
+                  <input
+                    type="date"
+                    className="border border-gray-300 rounded p-2 w-full text-black"
+                    value={item.startDate}
+                    max={currentDate}
+                    min={minDate}
+                    onChange={(e) => handleEditWorkHistoryField(index, 'startDate', e.target.value)}
+                  />
+                </div>
+                {!item.currentlyWorking && (
+                  <div className="mb-2">
+                    <label className="block text-gray-700 mb-2">End Date:</label>
+                    <input
+                      type="date"
+                      className="border border-gray-300 rounded p-2 w-full text-black"
+                      value={item.endDate}
+                      max={currentDate}
+                      min={item.startDate}
+                      onChange={(e) => handleEditWorkHistoryField(index, 'endDate', e.target.value)}
+                    />
+                  </div>
+                )}
+                <div className="mb-2 flex items-center">
+                  <input
+                    type="checkbox"
+                    className="mr-2"
+                    checked={item.currentlyWorking}
+                    onChange={(e) => handleEditWorkHistoryField(index, 'currentlyWorking', e.target.checked)}
+                  />
+                  <label className="text-gray-700">I currently work here</label>
+                </div>
                 <button
                   className="bg-green-500 text-white rounded px-4 py-2"
                   onClick={() => handleSaveWorkHistory(index)}
