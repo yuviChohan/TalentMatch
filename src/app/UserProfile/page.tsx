@@ -1,3 +1,5 @@
+// src/app/UserProfile/page.tsx
+"use client";
 import React, { useState, useEffect } from 'react';
 
 interface WorkHistoryEntry {

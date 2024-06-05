@@ -7,9 +7,10 @@ import { ReactNode } from 'react';
 interface AuthContextProps {
   uid: string | null;
   role: string | null;
+  setRole: (role: string) => void; // Add setRole
 }
 
-const AuthContext = createContext<AuthContextProps>({ uid: null, role: null });
+const AuthContext = createContext<AuthContextProps>({ uid: null, role: null, setRole: () => {} });
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [uid, setUid] = useState<string | null>(null);
@@ -43,7 +44,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   return (
-    <AuthContext.Provider value={{ uid, role }}>
+    <AuthContext.Provider value={{ uid, role, setRole }}>
       {children}
     </AuthContext.Provider>
   );

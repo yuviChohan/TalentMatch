@@ -1,3 +1,4 @@
+// src/app/Components/ApplicationPage.tsx
 import React, { useState } from 'react';
 import SubmissionPage from './SubmissionPage';
 
