@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useEffect } from 'react';
 import JobCard from '../components/JobCard';
 import ApplicationPage from '../components/ApplicationPage';
@@ -119,7 +120,9 @@ const Jobs: React.FC = () => {
   };
 
   if (applyingJob) {
-    return <ApplicationPage job={applyingJob} goBack={handleGoBack} />;
+    return <ApplicationPage job={applyingJob} goBack={handleGoBack} navigateToProfile={function (): void {
+      throw new Error('Function not implemented.');
+    } } />;
   }
 
   return (
