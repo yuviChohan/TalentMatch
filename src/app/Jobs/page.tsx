@@ -1,3 +1,5 @@
+"use client"
+
 import React, { useState, useEffect } from 'react';
 import JobCard from '../components/JobCard';
 import ApplicationPage from '../components/ApplicationPage';
@@ -18,6 +20,8 @@ const Jobs: React.FC = () => {
 
   const jobList = [
     {
+      job_id: 0,
+      company: 'Starfield Industry Ltd. (The Starfield Group)',
       title: 'QA Technician',
       location: 'Calgary, Alberta',
       salary: 'From $21 an hour',
@@ -26,6 +30,8 @@ const Jobs: React.FC = () => {
       details: 'Starfield Industry Ltd. (The Starfield Group) - Wage: $21/hour. Status: Full-time, Permanent. Hours/Shifts: 40 hours per week, 5 days per week on a shiftwork basis with 2 days off per week (may not be consecutive days). Must be available to work all 3 shifts - 5am-1:30pm, 9am-5:30pm, 2:30pm-11:00pm. Performs pre-operational inspection in accordance with food safety requirements, conducts CCP verifications, incoming material inspections, and in-process product inspections and finished product quality inspections. Ensures timely and accurate documentation and records keeping is performed.'
     },
     {
+      job_id: 0,
+      company: 'Tech Solutions Inc.',
       title: 'Software Engineer',
       location: 'Vancouver, British Columbia',
       salary: 'From $40 an hour',
@@ -34,6 +40,8 @@ const Jobs: React.FC = () => {
       details: 'Tech Solutions Inc. - Wage: $40/hour. Status: Full-time, Permanent. Responsibilities: Develop and maintain software applications, collaborate with cross-functional teams, perform code reviews, and ensure high-quality code. Requirements: Bachelor\'s degree in Computer Science or related field, proficiency in JavaScript and Python, experience with React and Node.js, and excellent problem-solving skills.'
     },
     {
+      job_id: 0,
+      company: 'Marketing Agency X',
       title: 'Marketing Manager',
       location: 'Toronto, Ontario',
       salary: 'From $50 an hour',
@@ -42,6 +50,8 @@ const Jobs: React.FC = () => {
       details: 'Marketing Agency X - Wage: $50/hour. Status: Full-time, Permanent. Responsibilities: Lead and manage marketing campaigns, develop marketing strategies, analyze market trends, and collaborate with the sales team. Requirements: Bachelor\'s degree in Marketing or related field, proven experience in marketing management, strong analytical skills, and excellent communication skills.'
     },
     {
+      job_id: 0,
+      company: 'Creative Studio Y',
       title: 'Graphic Designer',
       location: 'Montreal, Quebec',
       salary: 'From $25 an hour',
@@ -198,6 +208,7 @@ const Jobs: React.FC = () => {
                   <div key={index} className="mb-4" onClick={() => setSelectedJob(job)}>
                     <JobCard
                       title={job.title}
+                      company={job.company}
                       location={job.location}
                       salary={job.salary}
                       type={job.type}
