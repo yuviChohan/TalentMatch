@@ -8,12 +8,13 @@ const Home: React.FC = () => {
                 <div className="flex items-center justify-center">
                     <div className="max-w-3xl">
                         <h1 className="text-5xl font-bold text-blue-600 mb-4">
-                            Your One-Stop Solution for Hiring Remote Staff
+                            TalentMatch: Bridging Talents and Opportunities
                         </h1>
                         <p className="text-gray-800 text-lg mb-8">
-                            TalentMatch connects you with the best talent for your business.
-                            Whether you need developers, designers, or marketers, we've got
-                            you covered.
+                            At TalentMatch, we specialize in matching the right talent with the right opportunities.
+                            Our clients trust us to provide top-notch talent for their needs.
+                            Whether you're a developer, designer, or marketer, we've got opportunities
+                            for you.
                         </p>
                         <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-300">
                             Get Started
