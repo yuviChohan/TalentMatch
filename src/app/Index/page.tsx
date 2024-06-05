@@ -7,7 +7,7 @@ const Home: React.FC = () => {
             <main className="container mx-auto py-16">
                 <div className="flex items-center justify-center">
                     <div className="max-w-3xl">
-                        <h1 className="text-6xl font-bold text-blue-900 mb-4 transform transition duration-500 hover:scale-110">
+                        <h1 className="text-6xl font-bold mb-4 transform transition duration-500 hover:scale-110" style={{color: '#0266FA'}}>
                             TalentMatch: Bridging Talents and Opportunities
                         </h1>
                         <p className="text-gray-700 text-lg mb-8">
@@ -16,7 +16,7 @@ const Home: React.FC = () => {
                             Whether you're a developer, designer, or marketer, we've got opportunities
                             for you.
                         </p>
-                        <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-300 transform transition duration-500 hover:scale-110">
+                        <button className="px-6 py-3 rounded-lg transition-colors duration-300 transform transition duration-500 hover:scale-110" style={{backgroundColor: '#0266FA', color: 'white'}}>
                             Get Started
                         </button>
                     </div>
