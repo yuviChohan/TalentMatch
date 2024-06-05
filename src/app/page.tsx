@@ -3,10 +3,6 @@
 // src/app/page.tsx
 import './globals.css';
 import React, { useState } from 'react';
-import { ThemeProvider } from './contexts/ThemeContext';
-import { AuthProvider } from './contexts/AuthContext';
-import NavBar from './components/NavBar';  // Adjusted import for NavBar
-import Footer from './components/Footer';  // Adjusted import for Footer
 import Home from './Index/page';  // Adjusted import for Home
 import Jobs from './Jobs/page';  // Adjusted import for Jobs
 import Profile from './Profile/page';  // Adjusted import for Profile
@@ -15,14 +11,6 @@ import SignIn from './SignIn/page';  // Adjusted import for SignIn
 
 const Page: React.FC = () => {
   const [currentPage, setCurrentPage] = useState('home');
-
-  const links = [
-    { name: 'Home', path: 'home' },
-    { name: 'Jobs', path: 'jobs' },
-    { name: 'Profile', path: 'profile' },
-    { name: 'Sign In', path: 'signin' },
-    { name: 'Sign Up', path: 'signup' },
-  ];
 
   const renderPage = () => {
     switch (currentPage) {
@@ -42,15 +30,9 @@ const Page: React.FC = () => {
   };
 
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <NavBar links={links} setCurrentPage={setCurrentPage} />
-        <main>
-          {renderPage()}
-        </main>
-        <Footer />
-      </AuthProvider>
-    </ThemeProvider>
+    <main>
+      {renderPage()}
+    </main>
   );
 };
 

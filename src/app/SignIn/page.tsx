@@ -1,6 +1,8 @@
+"use client";
 import React, { useState, useEffect } from 'react';
 import { auth } from "../firebase";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInAnonymously, signOut, onAuthStateChanged } from "firebase/auth";
+import { set } from 'firebase/database';
 
 const SignIn: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -16,6 +18,7 @@ const SignIn: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [showAdditionalInfo, setShowAdditionalInfo] = useState(false);
+  const [userInfo, setUserInfo] = useState({"name": "", "dob": "", "uid": "", "is_owner": false, "is_admin": false, "phone_number": "", "email": "" });
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -38,19 +41,24 @@ const SignIn: React.FC = () => {
 
   const handleFirstNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFirstName(e.target.value);
+    setUserInfo({...userInfo, "name": e.target.value + " " + lastName});
   };
 
   const handleLastNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLastName(e.target.value);
+    setUserInfo({...userInfo, "name": firstName + " " + e.target.value});
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPhone(e.target.value);
+    setUserInfo({...userInfo, "phone_number": e.target.value});
   };
 
   const handleDobChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDob(e.target.value);
+    setUserInfo({...userInfo, "dob": e.target.value.split('-').reverse().join('')});
   };
+  
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -80,7 +88,8 @@ const SignIn: React.FC = () => {
         const user = userCredential.user;
         console.log(user);
         setMessage("Signed up with email!");
-        await saveUserToDatabase(user);
+        setUserInfo({"name": firstName + " " + lastName, "dob": dob, "uid": user.uid, "is_owner": false, "is_admin": false, "phone_number": phone, "email": email });
+        saveUserToDatabase();
       })
       .catch((error) => {
         console.error(error);
@@ -88,14 +97,22 @@ const SignIn: React.FC = () => {
       });
   };
 
-  const saveUserToDatabase = async (user) => {
+  const saveUserToDatabase = async () => {
     try {
-      const response = await fetch('/api/saveUser', {
+      const response = await fetch('https://resumegraderapi.onrender.com/upload/user', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ uid: user.uid, email: user.email, firstName, lastName, phone, dob }),
+        body: JSON.stringify({
+          "name": userInfo.name,
+          "dob": userInfo.dob.split('-').reverse().join(''), // Assuming dob is in YYYY-MM-DD format
+          "uid": userInfo.uid,
+          "is_owner": false,
+          "is_admin": false,
+          "phone_number": userInfo.phone_number,
+          "email": userInfo.email
+        }),
       });
       if (response.ok) {
         console.log("User saved to database");
@@ -106,23 +123,38 @@ const SignIn: React.FC = () => {
       console.error("Error saving user to database", error);
     }
   };
+  
 
   const signInWithGoogle = () => {
     const googleProvider = new GoogleAuthProvider();
     signInWithPopup(auth, googleProvider)
       .then((result) => {
         const user = result.user;
-        console.log(user);
-        setMessage("Signed in with Google!");
-        if (isSignUp) {
-          setShowAdditionalInfo(true);
-        }
+        console.log(user);  // Log the user object to check its properties
+        
+        
+          setMessage("Signed in with Google!");
+          if (user) {
+              setUserInfo({
+                "name": user.displayName || "", 
+                "dob": dob, 
+                "uid": user.uid, 
+                "is_owner": false, 
+                "is_admin": false, 
+                "phone_number": phone, 
+                "email": user.email || ""
+              });
+              if (isSignUp) {
+                setShowAdditionalInfo(true);
+              }
+        } 
       })
       .catch((error) => {
         console.error(error);
         setMessage(error.message);
       });
   };
+  
 
   const signUpWithGoogle = () => {
     setIsSignUp(true);
@@ -160,7 +192,7 @@ const SignIn: React.FC = () => {
     }
 
     try {
-      await saveUserToDatabase(user);
+      await saveUserToDatabase();
       setShowAdditionalInfo(false);
       setMessage("Signed up with Google!");
     } catch (error) {

@@ -1,3 +1,5 @@
+// src/app/Profile/page.tsx
+"use client";
 import React, { useState } from 'react';
 import UserProfile from '../UserProfile/page';
 import AdminProfile from '../AdminProfile/page';
@@ -9,9 +11,9 @@ const Profile: React.FC = () => {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-6 bg-gray-100">
-      <div className="w-full max-w-6xl bg-white shadow-xl rounded-xl p-10">
+      <div className="w-full max-w-6xl bg-white shadow-6xl rounded-xl p-10">
+      <h1 className="text-5xl font-extrabold text-gray-800">Profile</h1>
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-5xl font-extrabold text-gray-800">Profile</h1>
           {role === 'admin' && (
             <div>
               <button
