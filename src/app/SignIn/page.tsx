@@ -48,10 +48,12 @@ const SignIn: React.FC = () => {
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPhone(e.target.value);
+    setUserInfo({...userInfo, "phone_number": e.target.value});
   };
 
   const handleDobChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDob(e.target.value);
+    setUserInfo({...userInfo, "dob": e.target.value.split('-').reverse().join('')});
   };
   
 
@@ -84,7 +86,7 @@ const SignIn: React.FC = () => {
         console.log(user);
         setMessage("Signed up with email!");
         setUserInfo({"name": firstName + " " + lastName, "dob": dob, "uid": user.uid, "is_owner": false, "is_admin": false, "phone_number": phone, "email": email });
-        await saveUserToDatabase();
+        saveUserToDatabase();
       })
       .catch((error) => {
         console.error(error);
@@ -125,17 +127,31 @@ const SignIn: React.FC = () => {
     signInWithPopup(auth, googleProvider)
       .then((result) => {
         const user = result.user;
-        console.log(user);
-        setMessage("Signed in with Google!");
-        if (isSignUp) {
-          setShowAdditionalInfo(true);
-        }
+        console.log(user);  // Log the user object to check its properties
+        
+        
+          setMessage("Signed in with Google!");
+          if (user) {
+              setUserInfo({
+                "name": user.displayName || "", 
+                "dob": dob, 
+                "uid": user.uid, 
+                "is_owner": false, 
+                "is_admin": false, 
+                "phone_number": phone, 
+                "email": user.email || ""
+              });
+              if (isSignUp) {
+                setShowAdditionalInfo(true);
+              }
+        } 
       })
       .catch((error) => {
         console.error(error);
         setMessage(error.message);
       });
   };
+  
 
   const signUpWithGoogle = () => {
     setIsSignUp(true);
@@ -173,7 +189,7 @@ const SignIn: React.FC = () => {
     }
 
     try {
-      await saveUserToDatabase(user);
+      await saveUserToDatabase();
       setShowAdditionalInfo(false);
       setMessage("Signed up with Google!");
     } catch (error) {
