@@ -12,7 +12,7 @@ interface WorkHistoryEntry {
 }
 
 const UserProfile: React.FC = () => {
-  const { uid } = useAuth(); 
+  const { uid } = useAuth();
   const [firstName, setFirstName] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
@@ -65,12 +65,17 @@ const UserProfile: React.FC = () => {
       setResume(uploadedFile);
 
       try {
-        const userUid = uid; // Ensure uid is available
+        const userUid = uid;
         if (!userUid) {
           throw new Error('User UID not available');
         }
+        console.log('API:', process.env.REACT_APP_OPENAI_RESUMEGRADER_APIKEY);
+        const resumeGraderApiKey = process.env.REACT_APP_OPENAI_RESUMEGRADER_APIKEY;
+        if (!resumeGraderApiKey) {
+          throw new Error('API key not available');
+        }
 
-        const data = await uploadResumeAndExtractData('apikey', userUid, uploadedFile); // Replace API key.
+        const data = await uploadResumeAndExtractData(resumeGraderApiKey, userUid, uploadedFile);
         console.log('Extracted Resume Data:', data); // Update state with extracted skills, experience, etc.
       } catch (error) {
         console.error('Error extracting resume:', error);
