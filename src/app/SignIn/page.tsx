@@ -40,10 +40,12 @@ const SignIn: React.FC = () => {
 
   const handleFirstNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFirstName(e.target.value);
+    setUserInfo({...userInfo, "name": e.target.value + " " + lastName});
   };
 
   const handleLastNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLastName(e.target.value);
+    setUserInfo({...userInfo, "name": firstName + " " + e.target.value});
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
