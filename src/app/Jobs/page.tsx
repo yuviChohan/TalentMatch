@@ -20,42 +20,60 @@ const Jobs: React.FC = () => {
 
   const jobList = [
     {
-      job_id: 0,
+      job_id: 1,
       company: 'Starfield Industry Ltd. (The Starfield Group)',
       title: 'QA Technician',
       location: 'Calgary, Alberta',
       salary: 'From $21 an hour',
       type: 'Full-time',
+      application_deadline: '2024-12-31',
+      required_skills: ['quality assurance', 'inspection', 'documentation'],
+      highly_preferred_skills: [''],
+      rating: 4.5,
+      active: true,
       description: 'Starfield Industry Ltd. (The Starfield Group) - Performs in-house calibration of inspection and monitoring equipment, such as thermometers, scales, etc. Competitive pay and benefits. Positive and fun work environment.',
       details: 'Starfield Industry Ltd. (The Starfield Group) - Wage: $21/hour. Status: Full-time, Permanent. Hours/Shifts: 40 hours per week, 5 days per week on a shiftwork basis with 2 days off per week (may not be consecutive days). Must be available to work all 3 shifts - 5am-1:30pm, 9am-5:30pm, 2:30pm-11:00pm. Performs pre-operational inspection in accordance with food safety requirements, conducts CCP verifications, incoming material inspections, and in-process product inspections and finished product quality inspections. Ensures timely and accurate documentation and records keeping is performed.'
     },
     {
-      job_id: 0,
+      job_id: 2,
       company: 'Tech Solutions Inc.',
       title: 'Software Engineer',
       location: 'Vancouver, British Columbia',
       salary: 'From $40 an hour',
       type: 'Full-time',
+      application_deadline: '2024-12-31',
+      required_skills: ['JavaScript', 'Python', 'React', 'Node.js'],
+      highly_preferred_skills: [''],
+      rating: 4.0,
+      active: true,
       description: 'Tech Solutions Inc. - Develop and maintain software applications. Competitive pay and benefits. Positive and fun work environment.',
       details: 'Tech Solutions Inc. - Wage: $40/hour. Status: Full-time, Permanent. Responsibilities: Develop and maintain software applications, collaborate with cross-functional teams, perform code reviews, and ensure high-quality code. Requirements: Bachelor\'s degree in Computer Science or related field, proficiency in JavaScript and Python, experience with React and Node.js, and excellent problem-solving skills.'
     },
     {
-      job_id: 0,
+      job_id: 3,
       company: 'Marketing Agency X',
       title: 'Marketing Manager',
       location: 'Toronto, Ontario',
       salary: 'From $50 an hour',
       type: 'Full-time',
+      application_deadline: '2024-12-31',
+      required_skills: ['marketing management', 'market trends', 'sales'],
+      highly_preferred_skills: [''],
+      active: true,
       description: 'Marketing Agency X - Lead marketing campaigns and strategies. Competitive pay and benefits. Collaborative work environment.',
       details: 'Marketing Agency X - Wage: $50/hour. Status: Full-time, Permanent. Responsibilities: Lead and manage marketing campaigns, develop marketing strategies, analyze market trends, and collaborate with the sales team. Requirements: Bachelor\'s degree in Marketing or related field, proven experience in marketing management, strong analytical skills, and excellent communication skills.'
     },
     {
-      job_id: 0,
+      job_id: 4,
       company: 'Creative Studio Y',
       title: 'Graphic Designer',
       location: 'Montreal, Quebec',
       salary: 'From $25 an hour',
       type: 'Part-time',
+      application_deadline: '2024-12-31',
+      required_skills: ['Adobe Creative Suite', 'graphic design', 'brand consistency'],
+      highly_preferred_skills: [''],
+      active: true,
       description: 'Creative Studio Y - Design visual content for various projects. Flexible schedule. Creative and dynamic team.',
       details: 'Creative Studio Y - Wage: $25/hour. Status: Part-time. Responsibilities: Design visual content for websites, social media, and print materials, collaborate with the creative team, and ensure brand consistency. Requirements: Bachelor\'s degree in Graphic Design or related field, proficiency in Adobe Creative Suite, strong portfolio, and excellent attention to detail.'
     },
@@ -67,10 +85,18 @@ const Jobs: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        setJobs(jobList);
-        setFilteredJobs(jobList);
+        const response = await fetch('https://resumegraderapi.onrender.com/retrieve/jobs/');
+        if (!response.ok) {
+          throw new Error('Failed to fetch jobs');
+        }
+        const data = await response.json();
+        const combinedJobs = [...jobList, ...data]; // Combine manual jobs with API jobs
+        setJobs(combinedJobs);
+        setFilteredJobs(combinedJobs);
       } catch (error) {
         setError('Error fetching jobs. Please try again later.');
+        setJobs(jobList); // Use the initial jobList as a fallback
+        setFilteredJobs(jobList);
       } finally {
         setLoading(false);
       }
@@ -79,7 +105,7 @@ const Jobs: React.FC = () => {
   }, []);
 
   const handleSearch = () => {
-    const filtered = jobList.filter(job => {
+    const filtered = jobs.filter(job => {
       return (
         job.title.toLowerCase().includes(jobTitle.toLowerCase()) &&
         job.location.toLowerCase().includes(location.toLowerCase()) &&
@@ -114,7 +140,7 @@ const Jobs: React.FC = () => {
     setJobTitle('');
     setLocation('');
     setJobType('');
-    setFilteredJobs(jobList);
+    setFilteredJobs(jobs);
     setCurrentPage(1);
   };
 
@@ -237,6 +263,9 @@ const Jobs: React.FC = () => {
                 <div className="bg-white p-6 rounded shadow-md">
                   <h2 className="text-xl font-bold mb-2 text-gray-800">{selectedJob.title}</h2>
                   <p className="text-gray-700 mb-2">
+                    <strong>Company:</strong> {selectedJob.company}
+                  </p>
+                  <p className="text-gray-700 mb-2">
                     <strong>Location:</strong> {selectedJob.location}
                   </p>
                   <p className="text-gray-700 mb-2">
@@ -244,6 +273,12 @@ const Jobs: React.FC = () => {
                   </p>
                   <p className="text-gray-700 mb-2">
                     <strong>Type:</strong> {selectedJob.type}
+                  </p>
+                  <p className="text-gray-700 mb-2">
+                    <strong>Required Skills:</strong> {selectedJob.required_skills.join(', ')}
+                  </p>
+                  <p className="text-gray-700 mb-2">
+                    <strong>Application Deadline:</strong> {selectedJob.application_deadline}
                   </p>
                   <p className="text-gray-700 mb-4">{selectedJob.details}</p>
                   <button
