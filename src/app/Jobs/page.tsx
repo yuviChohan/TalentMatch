@@ -272,15 +272,15 @@ const Jobs: React.FC = () => {
                     <strong>Salary:</strong> {selectedJob.salary}
                   </p>
                   <p className="text-gray-700 mb-2">
-                    <strong>Type:</strong> {selectedJob.type}
+                    <strong>Type:</strong> {selectedJob.type ? selectedJob.type : 'N/A'}
                   </p>
                   <p className="text-gray-700 mb-2">
-                    <strong>Required Skills:</strong> {selectedJob.required_skills.join(', ')}
+                    <strong>Required Skills:</strong> {selectedJob.required_skills}
                   </p>
                   <p className="text-gray-700 mb-2">
                     <strong>Application Deadline:</strong> {selectedJob.application_deadline}
                   </p>
-                  <p className="text-gray-700 mb-4">{selectedJob.details}</p>
+                  <p className="text-gray-700 mb-4">{selectedJob.details ? selectedJob.details : 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'}</p>
                   <button
                     onClick={() => handleApply(selectedJob)}
                     className="bg-blue-500 text-white rounded px-4 py-2"
