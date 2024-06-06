@@ -155,7 +155,9 @@ const Jobs: React.FC = () => {
   };
 
   if (applyingJob) {
-    return <ApplicationPage job={applyingJob} goBack={handleGoBack} />;
+    return <ApplicationPage job={applyingJob} goBack={handleGoBack} navigateToProfile={function (): void {
+      throw new Error('Function not implemented.');
+    } } />;
   }
 
   return (
