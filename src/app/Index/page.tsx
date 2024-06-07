@@ -1,5 +1,6 @@
 // src/components/Home.tsx
 import React from 'react';
+import Link from 'next/link';
 
 const Home: React.FC = () => {
     return (
@@ -16,9 +17,11 @@ const Home: React.FC = () => {
                             Whether you're a developer, designer, or marketer, we've got opportunities
                             for you.
                         </p>
-                        <button className="px-6 py-3 rounded-lg transition-colors duration-300 transform transition duration-500 hover:scale-110" style={{backgroundColor: '#0266FA', color: 'white'}}>
+                        <Link href="/SignIn">
+                        <button className="px-6 py-3 rounded-lg transition-colors duration-300 transform transition-duration-500 hover:scale-110" style={{backgroundColor: '#0266FA', color: 'white'}}>
                             Get Started
                         </button>
+                        </Link>
                     </div>
                 </div>
             </main>

@@ -1,8 +1,8 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { auth } from "../firebase";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInAnonymously, signOut, onAuthStateChanged } from "firebase/auth";
-import { set } from 'firebase/database';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInAnonymously, signOut, onAuthStateChanged, sendPasswordResetEmail } from "firebase/auth";
+import Link from "next/link";
 
 const SignIn: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -58,7 +58,6 @@ const SignIn: React.FC = () => {
     setDob(e.target.value);
     setUserInfo({...userInfo, "dob": e.target.value.split('-').reverse().join('')});
   };
-  
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -123,7 +122,6 @@ const SignIn: React.FC = () => {
       console.error("Error saving user to database", error);
     }
   };
-  
 
   const signInWithGoogle = () => {
     const googleProvider = new GoogleAuthProvider();
@@ -131,22 +129,20 @@ const SignIn: React.FC = () => {
       .then((result) => {
         const user = result.user;
         console.log(user);  // Log the user object to check its properties
-        
-        
-          setMessage("Signed in with Google!");
-          if (user) {
-              setUserInfo({
-                "name": user.displayName || "", 
-                "dob": dob, 
-                "uid": user.uid, 
-                "is_owner": false, 
-                "is_admin": false, 
-                "phone_number": phone, 
-                "email": user.email || ""
-              });
-              if (isSignUp) {
-                setShowAdditionalInfo(true);
-              }
+        setMessage("Signed in with Google!");
+        if (user) {
+          setUserInfo({
+            "name": user.displayName || "", 
+            "dob": dob, 
+            "uid": user.uid, 
+            "is_owner": false, 
+            "is_admin": false, 
+            "phone_number": phone, 
+            "email": user.email || ""
+          });
+          if (isSignUp) {
+            setShowAdditionalInfo(true);
+          }
         } 
       })
       .catch((error) => {
@@ -154,7 +150,6 @@ const SignIn: React.FC = () => {
         setMessage(error.message);
       });
   };
-  
 
   const signUpWithGoogle = () => {
     setIsSignUp(true);
@@ -201,6 +196,22 @@ const SignIn: React.FC = () => {
     }
   };
 
+  const handlePasswordReset = () => {
+    if (!email) {
+      setMessage("Please enter your email address.");
+      return;
+    }
+
+    sendPasswordResetEmail(auth, email)
+      .then(() => {
+        setMessage("Password reset email sent! Check your inbox.");
+      })
+      .catch((error) => {
+        console.error(error);
+        setMessage(error.message);
+      });
+  };
+
   const currentDate = new Date().toISOString().split('T')[0];
   const minDate = "1909-01-01";
 
@@ -208,7 +219,9 @@ const SignIn: React.FC = () => {
     <main className="flex min-h-screen items-center justify-center p-6 bg-gradient-to-r from-blue-500 to-light-blue-500">
       <div className="w-full max-w-md bg-white shadow-lg rounded-lg p-8">
         <div className="flex justify-center mb-6">
-          <img src="logo.png" alt="Logo" className="h-16" />
+          <Link href="/Index">
+            <img src="logo.png" alt="Logo" className="h-16" />
+          </Link>
         </div>
         {user ? (
           <>
@@ -256,7 +269,12 @@ const SignIn: React.FC = () => {
                   Sign In
                 </button>
                 <div className="flex justify-between items-center mb-4">
-                  <span></span>
+                  <span
+                    onClick={handlePasswordReset}
+                    className="text-blue-500 cursor-pointer hover:underline"
+                  >
+                    Forgot Password?
+                  </span>
                   <span
                     onClick={() => setIsSignUp(true)}
                     className="text-blue-500 cursor-pointer hover:underline"
@@ -294,7 +312,6 @@ const SignIn: React.FC = () => {
                   Sign up with Google
                 </button>
                 <div className="flex justify-between items-center">
-                  
                 </div>
               </>
             )}
