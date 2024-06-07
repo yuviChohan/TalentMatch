@@ -1,33 +1,32 @@
-// src/app/Index/page.tsx
+// src/components/Home.tsx
 import React from 'react';
-import Loading from '../components/Loading';
-import Error from '../components/Error';
-import { useAuth } from '../contexts/AuthContext';
+import Link from 'next/link';
 
 const Home: React.FC = () => {
-  const { uid } = useAuth();
-
-  if (!uid) return <Loading />;
-  if (uid === 'error') return <Error message="Failed to load data" />;
-
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-6 bg-gradient-to-r from-blue-500 to-green-500 text-white">
-      <div className="flex flex-col items-center justify-center max-w-4xl w-full bg-white bg-opacity-70 shadow-lg rounded-lg p-8">
-        <h1 className="text-5xl font-extrabold mb-8 text-blue-600">
-          Welcome to <span className="text-green-500">SHIFTSIXOS</span>
-        </h1>
-        <p className="text-2xl mb-8 text-gray-800">
-          Your one-stop solution for hiring remote staff for your law firm.
-        </p>
-        <button className="w-full p-4 mb-4 text-blue-500 bg-white rounded-lg hover:bg-blue-100 transition-colors duration-300">
-          Get Started
-        </button>
-        <button className="w-full p-4 text-green-500 bg-white rounded-lg hover:bg-green-100 transition-colors duration-300">
-          Learn More
-        </button>
-      </div>
-    </main>
-  );
+    return (
+        <div className="bg-gradient-to-r from-blue-200 to-white min-h-screen text-gray-800">
+            <main className="container mx-auto py-16">
+                <div className="flex items-center justify-center">
+                    <div className="max-w-3xl">
+                        <h1 className="text-6xl font-bold mb-4 transform transition duration-500 hover:scale-110" style={{color: '#0266FA'}}>
+                            TalentMatch: Bridging Talents and Opportunities
+                        </h1>
+                        <p className="text-gray-700 text-lg mb-8">
+                            At TalentMatch, we specialize in matching the right talent with the right opportunities.
+                            Our clients trust us to provide top-notch talent for their needs.
+                            Whether you're a developer, designer, or marketer, we've got opportunities
+                            for you.
+                        </p>
+                        <Link href="/SignIn">
+                        <button className="px-6 py-3 rounded-lg transition-colors duration-300 transform transition-duration-500 hover:scale-110" style={{backgroundColor: '#0266FA', color: 'white'}}>
+                            Get Started
+                        </button>
+                        </Link>
+                    </div>
+                </div>
+            </main>
+        </div>
+    );
 };
 
 export default Home;
