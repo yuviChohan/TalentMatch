@@ -30,7 +30,7 @@ const NavBar: React.FC<NavBarProps> = ({ links }) => {
     <>
       <nav className="flex justify-between items-center p-4 bg-white shadow-md">
         <div className="flex items-center">
-          <Link href="/">
+          <Link href="/Index">
             <img src="/logo.png" alt="Logo" className="h-12 w-55 cursor-pointer" />
           </Link>
         </div>
