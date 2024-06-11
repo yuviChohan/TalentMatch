@@ -22,7 +22,7 @@ const SubmissionPage: React.FC<SubmissionPageProps> = ({ job, goBack }) => {
 
         <div className="flex justify-center items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-800 flex items-center">
-            Application Submitted!!!<span role="img" aria-label="smile" className="ml-2">😊</span>
+            Application Submitted!!!
           </h1>
         </div>
 

@@ -14,7 +14,6 @@ export default function RootLayout({
     { name: 'Home', path: '/' },
     { name: 'Jobs', path: '/Jobs' },
     { name: 'Profile', path: '/Profile' },
-    { name: 'Sign In', path: '/SignIn' },
   ];
   return (
     <html lang="en">
