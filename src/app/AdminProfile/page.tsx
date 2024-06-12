@@ -79,14 +79,14 @@ const AdminProfile: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-4xl shadow-xl rounded-xl p-10">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">Admin Profile</h1>
+    <div className="w-full max-w-5xl shadow-2xl rounded-2xl p-12 bg-gradient-to-r from-blue-50 to-blue-100 transition-opacity duration-500 ease-in-out">
+      <div className="flex justify-between items-center mb-10">
+        <h1 className="text-4xl font-bold text-blue-800 animate__animated animate__fadeInDown">Admin Profile</h1>
       </div>
-      <div className="grid grid-cols-2 gap-8">
-        <div className="flex flex-col items-center border p-6 rounded-lg shadow-md">
-          <div className="w-32 h-32 mb-4 border-4 rounded-full overflow-hidden">
-            <img src={profilePic} alt="Admin Icon" className="w-full h-full object-cover" />
+      <div className="grid grid-cols-3 gap-8">
+        <div className="col-span-1 flex flex-col items-center border p-6 rounded-lg shadow-lg transition-transform duration-500 ease-in-out transform hover:scale-105 bg-white">
+          <div className="w-36 h-36 mb-6 border-4 border-blue-300 rounded-full overflow-hidden shadow-md">
+            <img src={profilePic} alt="Admin Icon" className="w-full h-full object-cover animate__animated animate__fadeIn" />
           </div>
           <input
             type="file"
@@ -96,74 +96,218 @@ const AdminProfile: React.FC = () => {
             onChange={handleProfilePicChange}
           />
           <button
-            className="rounded px-4 py-2 mt-4 hover:bg-blue-600 transition duration-300"
+            className="rounded px-4 py-2 mt-4 bg-blue-600 text-white hover:bg-blue-700 transition duration-300 animate__animated animate__pulse"
             onClick={() => document.getElementById('profilePicInput')?.click()}
-            style={{ color: 'black' }}
           >
             Update/Add Profile Picture
           </button>
           <input
             type="text"
             placeholder="LinkedIn Profile URL"
-            className="border rounded p-2 mt-4 w-full"
+            className="border rounded p-2 mt-4 w-full bg-gray-50 focus:bg-white transition duration-300 text-black"
             value={linkedInUrl}
             onChange={(e) => setLinkedInUrl(e.target.value)}
-            style={{ color: 'black' }}
           />
-          {errors.linkedInUrl && <p className="text-sm">{errors.linkedInUrl}</p>}
-          <button
-            className="bg-black text-white rounded px-4 py-2 mt-4 hover:bg-gray-800 transition duration-300"
-            onClick={handleSubmit}
-          >
-            Submit
-          </button>
+          {errors.linkedInUrl && <p className="text-sm text-red-500">{errors.linkedInUrl}</p>}
         </div>
-        <div className="flex flex-col p-6 rounded-lg shadow-md">
-          <input
-            type="text"
-            placeholder="Name"
-            className="border rounded p-2 mb-4"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            style={{ color: 'black' }}
-          />
-          <input
-            type="text"
-            placeholder="Job Title"
-            className="border rounded p-2 mb-4"
-            value={jobTitle}
-            onChange={(e) => setJobTitle(e.target.value)}
-            style={{ color: 'black' }}
-          />
+        <div className="col-span-2 flex flex-col p-6 rounded-lg shadow-lg bg-white">
+          <div className="grid grid-cols-2 gap-4">
+            <input
+              type="text"
+              placeholder="Name"
+              className="border rounded p-2 mb-4 col-span-2 bg-gray-50 focus:bg-white transition duration-300 text-black"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Job Title"
+              className="border rounded p-2 mb-4 bg-gray-50 focus:bg-white transition duration-300 text-black"
+              value={jobTitle}
+              onChange={(e) => setJobTitle(e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Organization"
+              className="border rounded p-2 mb-4 bg-gray-50 focus:bg-white transition duration-300 text-black"
+              value={organization}
+              onChange={(e) => setOrganization(e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Skills"
+              className="border rounded p-2 mb-4 bg-gray-50 focus:bg-white transition duration-300 text-black"
+              value={skills}
+              onChange={(e) => setSkills(e.target.value)}
+            />
+          </div>
           <textarea
             placeholder="Bio"
-            className="border rounded p-2 mb-4 h-24 resize-none"
+            className="border rounded p-2 mb-4 h-24 resize-none bg-gray-50 focus:bg-white transition duration-300 text-black"
             value={bio}
             onChange={(e) => setBio(e.target.value)}
-            style={{ color: 'black' }}
           />
-          <input
-            type="text"
-            placeholder="Organization"
-            className="border rounded p-2 mb-4"
-            value={organization}
-            onChange={(e) => setOrganization(e.target.value)}
-            style={{ color: 'black' }}
-          />
-          <input
-            type="text"
-            placeholder="Skills"
-            className="border rounded p-2 mb-4"
-            value={skills}
-            onChange={(e) => setSkills(e.target.value)}
-            style={{ color: 'black' }}
-          />
-          {/* Additional inputs */}
+          <div className="grid grid-cols-2 gap-4">
+            <input
+              type="email"
+              placeholder="Email"
+              className="border rounded p-2 mb-4 bg-gray-50 focus:bg-white transition duration-300 text-black"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Mobile Number"
+              className="border rounded p-2 mb-4 bg-gray-50 focus:bg-white transition duration-300 text-black"
+              value={mobileNumber}
+              onChange={(e) => setMobileNumber(e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Address"
+              className="border rounded p-2 mb-4 bg-gray-50 focus:bg-white transition duration-300 text-black"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+            />
+            <input
+              type="date"
+              placeholder="Date of Birth"
+              className="border rounded p-2 mb-4 bg-gray-50 focus:bg-white transition duration-300 text-black"
+              value={dob}
+              onChange={(e) => setDob(e.target.value)}
+            />
+            <select
+              className="border rounded p-2 mb-4 bg-gray-50 focus:bg-white transition duration-300 text-black"
+              value={gender}
+              onChange={(e) => setGender(e.target.value)}
+            >
+              <option value="">Select Gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+            <input
+              type="text"
+              placeholder="Interests"
+              className="border rounded p-2 mb-4 bg-gray-50 focus:bg-white transition duration-300 text-black"
+              value={interests}
+              onChange={(e) => setInterests(e.target.value)}
+            />
+          </div>
         </div>
       </div>
-      <div className="flex justify-end mt-6">
+      <div className="mt-8">
+        <h2 className="text-2xl font-bold text-blue-700 mb-4">Education</h2>
+        {education.map((edu,          index) => (
+          <div key={index} className="flex justify-between items-center mb-4">
+            <input
+              type="text"
+              placeholder="Degree"
+              className="border rounded p-2 w-1/3 bg-gray-50 focus:bg-white transition duration-300 text-black"
+              value={edu.degree}
+              onChange={(e) => {
+                const newEducation = [...education];
+                newEducation[index].degree = e.target.value;
+                setEducation(newEducation);
+              }}
+            />
+            <input
+              type="text"
+              placeholder="Institution"
+              className="border rounded p-2 w-1/3 mx-2 bg-gray-50 focus:bg-white transition duration-300 text-black"
+              value={edu.institution}
+              onChange={(e) => {
+                const newEducation = [...education];
+                newEducation[index].institution = e.target.value;
+                setEducation(newEducation);
+              }}
+            />
+            <input
+              type="text"
+              placeholder="Graduation Year"
+              className="border rounded p-2 w-1/3 bg-gray-50 focus:bg-white transition duration-300 text-black"
+              value={edu.graduationYear}
+              onChange={(e) => {
+                const newEducation = [...education];
+                newEducation[index].graduationYear = e.target.value;
+                setEducation(newEducation);
+              }}
+            />
+            <button
+              className="bg-red-500 text-white rounded px-4 py-2 ml-4 hover:bg-red-600 transition duration-300"
+              onClick={() => {
+                const newEducation = education.filter((_, i) => i !== index);
+                setEducation(newEducation);
+              }}
+            >
+              Delete
+            </button>
+          </div>
+        ))}
         <button
-          className="bg-gray-500 text-white rounded px-6 py-2 mr-2 hover:bg-gray-600 transition duration-300"
+          className="bg-green-500 text-white rounded px-6 py-2 hover:bg-green-600 transition duration-300"
+          onClick={() => setEducation([...education, { degree: '', institution: '', graduationYear: '' }])}
+        >
+          Add Education
+        </button>
+      </div>
+      <div className="mt-8">
+        <h2 className="text-2xl font-bold text-blue-700 mb-4">Work Experience</h2>
+        {workExperience.map((work, index) => (
+          <div key={index} className="flex justify-between items-center mb-4">
+            <input
+              type="text"
+              placeholder="Job Title"
+              className="border rounded p-2 w-1/3 bg-gray-50 focus:bg-white transition duration-300 text-black"
+              value={work.jobTitle}
+              onChange={(e) => {
+                const newWorkExperience = [...workExperience];
+                newWorkExperience[index].jobTitle = e.target.value;
+                setWorkExperience(newWorkExperience);
+              }}
+            />
+            <input
+              type="text"
+              placeholder="Company"
+              className="border rounded p-2 w-1/3 mx-2 bg-gray-50 focus:bg-white transition duration-300 text-black"
+              value={work.company}
+              onChange={(e) => {
+                const newWorkExperience = [...workExperience];
+                newWorkExperience[index].company = e.target.value;
+                setWorkExperience(newWorkExperience);
+              }}
+            />
+            <input
+              type="text"
+              placeholder="Duration"
+              className="border rounded p-2 w-1/3 bg-gray-50 focus:bg-white transition duration-300 text-black"
+              value={work.duration}
+              onChange={(e) => {
+                const newWorkExperience = [...workExperience];
+                newWorkExperience[index].duration = e.target.value;
+                setWorkExperience(newWorkExperience);
+              }}
+            />
+            <button
+              className="bg-red-500 text-white rounded px-4 py-2 ml-4 hover:bg-red-600 transition duration-300"
+              onClick={() => {
+                const newWorkExperience = workExperience.filter((_, i) => i !== index);
+                setWorkExperience(newWorkExperience);
+              }}
+            >
+              Delete
+            </button>
+          </div>
+        ))}
+        <button
+          className="bg-green-500 text-white rounded px-6 py-2 hover:bg-green-600 transition duration-300"
+          onClick={() => setWorkExperience([...workExperience, { jobTitle: '', company: '', duration: '' }])}
+        >
+          Add Work Experience
+        </button>
+      </div>
+      <div className="flex justify-end mt-10">
+        <button
+          className="bg-gray-500 text-white rounded px-6 py-2 mr-4 hover:bg-gray-600 transition duration-300"
           onClick={handleReset}
         >
           Reset
@@ -175,7 +319,7 @@ const AdminProfile: React.FC = () => {
           {isSubmitting ? (
             <span className="flex items-center">
               <svg
-                className="animate-spin h-5 w-5 mr-3 border-t-2 border-b -2"
+                className="animate-spin h-5 w-5 mr-3 border-t-2 border-b-2 border-white"
                 viewBox="0 0 24 24"
               ></svg>
               Submitting...
@@ -186,7 +330,7 @@ const AdminProfile: React.FC = () => {
         </button>
       </div>
       {successMessage && (
-        <div className="mt-4 text-center">
+        <div className="mt-4 text-center text-green-500 transition-opacity duration-500 ease-in-out">
           {successMessage}
         </div>
       )}
@@ -195,3 +339,4 @@ const AdminProfile: React.FC = () => {
 };
 
 export default AdminProfile;
+
