@@ -161,103 +161,23 @@ const Jobs: React.FC = () => {
   }
 
   return (
-    <main className="flex flex-col items-center p-6 bg-gray-100 min-h-screen">
-      <div className="w-full max-w-6xl bg-white shadow-md rounded-lg p-8">
-        <h1 className="text-2xl font-bold mb-4 text-gray-800">Job Listings</h1>
-
-        <div className="flex flex-wrap justify-between items-center mb-6 space-y-4 md:space-y-0">
-          <input
-            type="text"
-            placeholder="Job Title"
-            className="border border-gray-300 rounded p-2 text-gray-700 flex-grow"
-            value={jobTitle}
-            onChange={(e) => setJobTitle(e.target.value)}
-            onKeyPress={handleKeyPress}
-          />
-          <select
-            className="border border-gray-300 rounded p-2 text-gray-700 flex-grow mx-2"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-          >
-            <option value="">Select Location</option>
-            <option value="Calgary, Alberta">Calgary, Alberta</option>
-            <option value="Vancouver, British Columbia">Vancouver, British Columbia</option>
-            <option value="Toronto, Ontario">Toronto, Ontario</option>
-            <option value="Montreal, Quebec">Montreal, Quebec</option>
-            <option value="Edmonton, Alberta">Edmonton, Alberta</option>
-            <option value="Ottawa, Ontario">Ottawa, Ontario</option>
-            <option value="Winnipeg, Manitoba">Winnipeg, Manitoba</option>
-            <option value="Quebec City, Quebec">Quebec City, Quebec</option>
-            <option value="Hamilton, Ontario">Hamilton, Ontario</option>
-            <option value="Halifax, Nova Scotia">Halifax, Nova Scotia</option>
-          </select>
-          <select
-            className="border border-gray-300 rounded p-2 text-gray-700 flex-grow"
-            value={jobType}
-            onChange={(e) => setJobType(e.target.value)}
-          >
-            <option value="">Select Type</option>
-            <option value="Full-time">Full-time</option>
-            <option value="Part-time">Part-time</option>
-            <option value="Contract">Contract</option>
-          </select>
-          <button
-            onClick={handleSearch}
-            className="bg-blue-500 text-white rounded px-4 py-2 ml-2"
-          >
-            Search
-          </button>
-          <button
-            onClick={clearFilters}
-            className="bg-gray-500 text-white rounded px-4 py-2 ml-2"
-          >
-            Clear
-          </button>
-          <select
-            onChange={(e) => sortBySalary(e.target.value)}
-            className="bg-blue-500 text-white rounded px-4 py-2 ml-2"
-          >
-            <option value="lowToHigh">Sort by Salary: Low to High</option>
-            <option value="highToLow">Sort by Salary: High to Low</option>
-          </select>
-        </div>
-
-        {loading ? (
-          <div className="flex justify-center items-center">
-            <div className="loader">Loading...</div>
-          </div>
-        ) : error ? (
-          <div className="text-red-500">{error}</div>
-        ) : (
-          <div className="flex">
-            <div className="w-2/5 p-4">
-              {currentJobs.length > 0 ? (
-                currentJobs.map((job, index) => (
-                  <div key={index} className="mb-4" onClick={() => setSelectedJob(job)}>
-                    <JobCard
-                      title={job.title}
-                      company={job.company}
-                      location={job.location}
-                      salary={job.salary}
-                      type={job.type}
-                      description={`${job.description.substring(0, 100)}...`}
-                    />
-                  </div>
-                ))
-              ) : (
-                <div className="text-center text-gray-500 w-full">No job listings found.</div>
-              )}
-              <div className="flex justify-center space-x-2 mt-4">
-                {Array.from({ length: Math.ceil(filteredJobs.length / jobsPerPage) }, (_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => paginate(i + 1)}
-                    className={`px-4 py-2 rounded ${currentPage === i + 1 ? 'bg-blue-500 text-white' : 'bg-gray-300'}`}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-              </div>
+    <main className="flex min-h-screen flex-col items-center justify-center p-6 bg-gradient-to-r from-blue-100 to-blue-300">
+      <div >
+        <div className="flex justify-between items-center mb-8">
+          {role === 'admin' && (
+            <div>
+              <button
+                className={`mx-2 p-2 ${!isAdmin ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'} rounded transition-colors duration-300`}
+                onClick={() => setIsAdmin(false)}
+              >
+                User Jobs
+              </button>
+              <button
+                className={`mx-2 p-2 ${isAdmin ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'} rounded transition-colors duration-300`}
+                onClick={() => setIsAdmin(true)}
+              >
+                Admin Jobs
+              </button>
             </div>
 
             <div className="w-3/5 p-4">

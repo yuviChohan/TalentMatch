@@ -1,8 +1,9 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { auth } from "../firebase";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInAnonymously, signOut, onAuthStateChanged, sendPasswordResetEmail } from "firebase/auth";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInAnonymously, signOut, onAuthStateChanged, sendPasswordResetEmail, fetchSignInMethodsForEmail, sendEmailVerification } from "firebase/auth";
 import Link from "next/link";
+import { useRouter } from 'next/navigation';
 
 const SignIn: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -18,11 +19,20 @@ const SignIn: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [showAdditionalInfo, setShowAdditionalInfo] = useState(false);
-  const [userInfo, setUserInfo] = useState({"name": "", "dob": "", "uid": "", "is_owner": false, "is_admin": false, "phone_number": "", "email": "" });
+  const [showForgotPasswordPrompt, setShowForgotPasswordPrompt] = useState(false);
+  const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
+  const [userInfo, setUserInfo] = useState({ "name": "", "dob": "", "uid": "", "is_owner": false, "is_admin": false, "phone_number": "", "email": "" });
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
+      if (currentUser) {
+        setUser(currentUser);
+        if (!currentUser.emailVerified) {
+          setIsVerifyingEmail(true);
+        }
+      } else {
+        setUser(null);
+      }
     });
     return () => unsubscribe();
   }, []);
@@ -41,38 +51,48 @@ const SignIn: React.FC = () => {
 
   const handleFirstNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFirstName(e.target.value);
-    setUserInfo({...userInfo, "name": e.target.value + " " + lastName});
+    setUserInfo({ ...userInfo, "name": e.target.value + " " + lastName });
   };
 
   const handleLastNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLastName(e.target.value);
-    setUserInfo({...userInfo, "name": firstName + " " + e.target.value});
+    setUserInfo({ ...userInfo, "name": firstName + " " + e.target.value });
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPhone(e.target.value);
-    setUserInfo({...userInfo, "phone_number": e.target.value});
+    setUserInfo({ ...userInfo, "phone_number": e.target.value });
   };
 
   const handleDobChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDob(e.target.value);
-    setUserInfo({...userInfo, "dob": e.target.value.split('-').reverse().join('')});
+    setUserInfo({ ...userInfo, "dob": e.target.value.split('-').reverse().join('') });
   };
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
+  const redirectToHome = () => {
+    window.location.href = "/Index";
+  };
+
   const signInWithEmail = () => {
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         const user = userCredential.user;
-        console.log(user);
-        setMessage("Signed in with email!");
+        if (user.emailVerified) {
+          console.log(user);
+          setMessage("Signed in with email!");
+          redirectToHome();
+        } else {
+          setMessage("Please verify your email before signing in.");
+          setIsVerifyingEmail(true);
+        }
       })
       .catch((error) => {
         console.error(error);
-        setMessage(error.message);
+        setMessage("Error signing in: " + error.message);
       });
   };
 
@@ -86,13 +106,15 @@ const SignIn: React.FC = () => {
       .then(async (userCredential) => {
         const user = userCredential.user;
         console.log(user);
-        setMessage("Signed up with email!");
-        setUserInfo({"name": firstName + " " + lastName, "dob": dob, "uid": user.uid, "is_owner": false, "is_admin": false, "phone_number": phone, "email": email });
+        setMessage("Signed up with email! Please verify your email.");
+        await sendEmailVerification(user);
+        setIsVerifyingEmail(true);
+        setUserInfo({ "name": firstName + " " + lastName, "dob": dob, "uid": user.uid, "is_owner": false, "is_admin": false, "phone_number": phone, "email": email });
         saveUserToDatabase();
       })
       .catch((error) => {
         console.error(error);
-        setMessage(error.message);
+        setMessage("Error signing up: " + error.message);
       });
   };
 
@@ -123,37 +145,65 @@ const SignIn: React.FC = () => {
     }
   };
 
-  const signInWithGoogle = () => {
+  const signInWithGoogle = async () => {
     const googleProvider = new GoogleAuthProvider();
-    signInWithPopup(auth, googleProvider)
-      .then((result) => {
-        const user = result.user;
-        console.log(user);  // Log the user object to check its properties
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      if (user.emailVerified) {
+        console.log(user);
         setMessage("Signed in with Google!");
-        if (user) {
-          setUserInfo({
-            "name": user.displayName || "", 
-            "dob": dob, 
-            "uid": user.uid, 
-            "is_owner": false, 
-            "is_admin": false, 
-            "phone_number": phone, 
-            "email": user.email || ""
-          });
-          if (isSignUp) {
-            setShowAdditionalInfo(true);
-          }
-        } 
-      })
-      .catch((error) => {
-        console.error(error);
-        setMessage(error.message);
-      });
+        redirectToHome();
+        setUserInfo({
+          "name": user.displayName || "",
+          "dob": dob,
+          "uid": user.uid,
+          "is_owner": false,
+          "is_admin": false,
+          "phone_number": phone,
+          "email": user.email || ""
+        });
+      } else {
+        setMessage("Please verify your email before signing in.");
+        setIsVerifyingEmail(true);
+      }
+    } catch (error: any) {
+      console.error(error);
+      setMessage("Error signing in with Google: " + (error.message || error.toString()));
+    }
   };
 
-  const signUpWithGoogle = () => {
-    setIsSignUp(true);
-    signInWithGoogle();
+  const signUpWithGoogle = async () => {
+    const googleProvider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+
+      // Check if the email is already in use
+      const methods = await fetchSignInMethodsForEmail(auth, user.email!);
+      if (methods.length > 0) {
+        setMessage("This email is already associated with an existing account.");
+        return;
+      }
+
+      console.log(user);
+      await sendEmailVerification(user);
+      setMessage("Signed up with Google! Please verify your email.");
+      setIsVerifyingEmail(true);
+      setUserInfo({
+        "name": user.displayName || "",
+        "dob": dob,
+        "uid": user.uid,
+        "is_owner": false,
+        "is_admin": false,
+        "phone_number": phone,
+        "email": user.email || ""
+      });
+      setShowAdditionalInfo(true);
+    } catch (error: any) {
+      console.error(error);
+      setMessage("Error signing in with Google: " + (error.message || error.toString()));
+    }
   };
 
   const signInAnonymouslyHandler = () => {
@@ -162,10 +212,11 @@ const SignIn: React.FC = () => {
         const user = result.user;
         console.log(user);
         setMessage("Signed in anonymously!");
+        redirectToHome();
       })
       .catch((error) => {
         console.error(error);
-        setMessage(error.message);
+        setMessage("Error signing in anonymously: " + error.message);
       });
   };
 
@@ -176,7 +227,7 @@ const SignIn: React.FC = () => {
       })
       .catch((error) => {
         console.error(error);
-        setMessage(error.message);
+        setMessage("Error signing out: " + error.message);
       });
   };
 
@@ -208,15 +259,30 @@ const SignIn: React.FC = () => {
       })
       .catch((error) => {
         console.error(error);
-        setMessage(error.message);
+        setMessage("Error sending password reset email: " + error.message);
       });
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setMessage("Please enter your email address.");
+      return;
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setMessage("If this email exists, the password reset request will be sent to your email. If you don't receive any email, please check your email address or try to resend the code.");
+    } catch (error: any) {
+      console.error(error);
+      setMessage("Error sending password reset email: " + error.message);
+    }
   };
 
   const currentDate = new Date().toISOString().split('T')[0];
   const minDate = "1909-01-01";
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-6 bg-gradient-to-r from-blue-500 to-light-blue-500">
+    <main className="flex min-h-screen items-center justify-center p-6 bg-gradient-to-tr from-blue-500">
       <div className="w-full max-w-md bg-white shadow-lg rounded-lg p-8">
         <div className="flex justify-center mb-6">
           <Link href="/Index">
@@ -270,7 +336,7 @@ const SignIn: React.FC = () => {
                 </button>
                 <div className="flex justify-between items-center mb-4">
                   <span
-                    onClick={handlePasswordReset}
+                    onClick={() => setShowForgotPasswordPrompt(true)}
                     className="text-blue-500 cursor-pointer hover:underline"
                   >
                     Forgot Password?
@@ -465,6 +531,52 @@ const SignIn: React.FC = () => {
               >
                 Submit
               </button>
+            </div>
+          </div>
+        )}
+
+        {showForgotPasswordPrompt && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
+            <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+              <h2 className="text-2xl font-bold mb-4">Forgot Password</h2>
+              <div className="mb-4">
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={handleEmailChange}
+                  className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+                />
+              </div>
+              <button
+                onClick={handleForgotPassword}
+                className="w-full p-3 mb-4 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors duration-300"
+              >
+                Submit
+              </button>
+              <button
+                onClick={handlePasswordReset}
+                className="w-full p-3 mb-4 text-white bg-green-500 rounded-lg hover:bg-green-600 transition-colors duration-300"
+              >
+                Resend Code
+              </button>
+              <button
+                onClick={() => setShowForgotPasswordPrompt(false)}
+                className="w-full p-3 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors duration-300"
+              >
+                Cancel
+              </button>
+              {message && <p className="mt-4 text-red-500 text-center">{message}</p>}
+            </div>
+          </div>
+        )}
+
+        {isVerifyingEmail && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
+            <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md text-center">
+              <h2 className="text-2xl font-bold mb-4">Verify Your Email</h2>
+              <p className="mb-4">A verification email has been sent to {email}. Please check your inbox and verify your email to continue.</p>
+              <p className="text-blue-500 cursor-pointer hover:underline" onClick={handleSignOut}>Log Out</p>
             </div>
           </div>
         )}
