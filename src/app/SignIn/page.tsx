@@ -21,7 +21,7 @@ const SignIn: React.FC = () => {
   const [showAdditionalInfo, setShowAdditionalInfo] = useState(false);
   const [showForgotPasswordPrompt, setShowForgotPasswordPrompt] = useState(false);
   const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
-  const [userInfo, setUserInfo] = useState({ "name": "", "dob": "", "uid": "", "is_owner": false, "is_admin": false, "phone_number": "", "email": "" });
+  const [userInfo, setUserInfo] = useState({ "first_name": "", "last_name": "", "dob": "", "uid": "", "is_owner": false, "is_admin": false, "phone_number": "", "email": "" });
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -51,12 +51,12 @@ const SignIn: React.FC = () => {
 
   const handleFirstNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFirstName(e.target.value);
-    setUserInfo({ ...userInfo, "name": e.target.value + " " + lastName });
+    setUserInfo({ ...userInfo, "first_name": e.target.value + " " + lastName });
   };
 
   const handleLastNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLastName(e.target.value);
-    setUserInfo({ ...userInfo, "name": firstName + " " + e.target.value });
+    setUserInfo({ ...userInfo, "last_name": firstName + " " + e.target.value });
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -109,7 +109,7 @@ const SignIn: React.FC = () => {
         setMessage("Signed up with email! Please verify your email.");
         await sendEmailVerification(user);
         setIsVerifyingEmail(true);
-        setUserInfo({ "name": firstName + " " + lastName, "dob": dob, "uid": user.uid, "is_owner": false, "is_admin": false, "phone_number": phone, "email": email });
+        setUserInfo({ "first_name": firstName, "last_name": lastName, "dob": dob, "uid": user.uid, "is_owner": false, "is_admin": false, "phone_number": phone, "email": email });
         saveUserToDatabase();
       })
       .catch((error) => {
@@ -120,13 +120,14 @@ const SignIn: React.FC = () => {
 
   const saveUserToDatabase = async () => {
     try {
-      const response = await fetch('https://resumegraderapi.onrender.com/upload/user', {
+      const response = await fetch('https://resumegraderapi.onrender.com/users/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          "name": userInfo.name,
+          "first_name": userInfo.first_name,
+          "last_name": userInfo.last_name,
           "dob": userInfo.dob.split('-').reverse().join(''), // Assuming dob is in YYYY-MM-DD format
           "uid": userInfo.uid,
           "is_owner": false,
@@ -155,7 +156,8 @@ const SignIn: React.FC = () => {
         setMessage("Signed in with Google!");
         redirectToHome();
         setUserInfo({
-          "name": user.displayName || "",
+          "first_name": user.displayName?.split(' ')[0] || "",
+          "last_name": user.displayName?.split(' ')[1] || "",
           "dob": dob,
           "uid": user.uid,
           "is_owner": false,
@@ -191,7 +193,8 @@ const SignIn: React.FC = () => {
       setMessage("Signed up with Google! Please verify your email.");
       setIsVerifyingEmail(true);
       setUserInfo({
-        "name": user.displayName || "",
+        "first_name": user.displayName?.split(' ')[0] || "",
+        "last_name": user.displayName?.split(' ')[1] || "",
         "dob": dob,
         "uid": user.uid,
         "is_owner": false,
