@@ -1,12 +1,12 @@
 import React from 'react';
+import Link from 'next/link';
 
 interface SubmissionPageProps {
   job: any;
   goBack: () => void;
-  navigateToProfile: () => void;
 }
 
-const SubmissionPage: React.FC<SubmissionPageProps> = ({ job, goBack, navigateToProfile }) => {
+const SubmissionPage: React.FC<SubmissionPageProps> = ({ job, goBack }) => {
   return (
     <main className="flex flex-col items-center p-6 bg-gray-100 min-h-screen">
       <div className="w-full max-w-6xl bg-white shadow-md rounded-lg p-8">
@@ -22,7 +22,7 @@ const SubmissionPage: React.FC<SubmissionPageProps> = ({ job, goBack, navigateTo
 
         <div className="flex justify-center items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-800 flex items-center">
-            Application Submitted!!!<span role="img" aria-label="smile" className="ml-2">😊</span>
+            Application Submitted!!!
           </h1>
         </div>
 
@@ -32,7 +32,10 @@ const SubmissionPage: React.FC<SubmissionPageProps> = ({ job, goBack, navigateTo
             <span role="img" aria-label="success" className="text-8xl">✅</span>
           </div>
           <p className="mb-4 text-gray-800">
-            We have received your application and our team will review it shortly. You will be notified via email about the status of your application or you can check your application status in <span onClick={navigateToProfile} className='font-bold cursor-pointer text-blue-500 hover:underline'>Profile</span>.
+            We have received your application and our team will review it shortly. You will be notified via email about the status of your application or you can check your application status in{' '}
+            <Link href="/Profile">
+              <span className="font-bold cursor-pointer text-blue-500 hover:underline">Profile</span>
+            </Link>.
           </p>
           <div className="flex justify-center mt-6">
             <button 
