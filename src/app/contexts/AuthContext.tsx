@@ -1,20 +1,28 @@
 // src/app/contexts/AuthContext.tsx
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, onAuthStateChanged } from "firebase/auth";
+import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { User, onAuthStateChanged, signOut as firebaseSignOut } from "firebase/auth";
 import { auth } from '../firebase';
-import { ReactNode } from 'react';
 
 interface AuthContextProps {
   uid: string | null;
   role: string | null;
-  setRole: (role: string) => void; // Add setRole
+  setRole: (role: string) => void;
+  user: User | null;
+  signOut: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextProps>({ uid: null, role: null, setRole: () => {} });
+const AuthContext = createContext<AuthContextProps>({
+  uid: null,
+  role: null,
+  setRole: () => {},
+  user: null,
+  signOut: async () => {},
+});
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [uid, setUid] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const fetchUserRole = async (uid: string) => {
@@ -24,27 +32,36 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           throw new Error('Failed to fetch user role');
         }
         const data = await response.json();
-        setRole(data.role); // Assuming the API returns { role: 'admin' | 'user' }
+        setRole(data.role);
       } catch (error) {
         console.error('Error fetching user role:', error);
       }
     };
 
-    const unsubscribe = onAuthStateChanged(auth, (user: User | null) => {
-      if (user) {
-        setUid(user.uid);
-        fetchUserRole(user.uid);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser: User | null) => {
+      if (currentUser) {
+        setUid(currentUser.uid);
+        setUser(currentUser);
+        fetchUserRole(currentUser.uid);
       } else {
         setUid(null);
         setRole(null);
+        setUser(null);
       }
     });
 
     return () => unsubscribe();
   }, []);
 
+  const signOut = async () => {
+    await firebaseSignOut(auth);
+    setUid(null);
+    setRole(null);
+    setUser(null);
+  };
+
   return (
-    <AuthContext.Provider value={{ uid, role, setRole }}>
+    <AuthContext.Provider value={{ uid, role, setRole, user, signOut }}>
       {children}
     </AuthContext.Provider>
   );
