@@ -109,11 +109,12 @@ const SignIn: React.FC = () => {
         console.log(user); // For testing purposes
 
         // Update userInfo with the UID after user creation
+        const formattedDob = dob.split('-').reverse().join('');
         const updatedUserInfo = {
           uid: user.uid,
           first_name: firstName,
           last_name: lastName,
-          dob: dob,
+          dob: formattedDob,
           is_owner: false,
           is_admin: false,
           phone_number: phone,
