@@ -1,6 +1,7 @@
 // src/app/UserProfile/page.tsx
 "use client";
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface WorkHistoryEntry {
   company: string;
@@ -13,6 +14,7 @@ interface WorkHistoryEntry {
 }
 
 const UserProfile: React.FC = () => {
+  const { uid } = useAuth();
   const [firstName, setFirstName] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
@@ -34,9 +36,52 @@ const UserProfile: React.FC = () => {
     ]);
   }, []);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setFile: React.Dispatch<React.SetStateAction<File | null>>) => {
+  // Call API to extract resume data
+  const uploadResumeAndExtractData = async (apiKey: string, uid: string, file: File) => {
+    const formData = new FormData();
+    formData.append('apiKey', apiKey);
+    formData.append('uid', uid);
+    formData.append('file', file);
+  
+    try {
+      const response = await fetch('https://resumegraderapi.onrender.com/extract/resume', {
+        method: 'POST',
+        body: formData,
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to extract resume data');
+      }
+  
+      const data = await response.json();
+      return data; // Return the extracted data
+    } catch (error) {
+      console.error('Error extracting resume data:', error);
+      throw error;
+    }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, setResume: React.Dispatch<React.SetStateAction<File | null>>) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+      const uploadedFile = e.target.files[0];
+      setResume(uploadedFile);
+
+      try {
+        const userUid = uid;
+        if (!userUid) {
+          throw new Error('User UID not available');
+        }
+        console.log('API:', process.env.REACT_APP_OPENAI_RESUMEGRADER_APIKEY);
+        const resumeGraderApiKey = process.env.REACT_APP_OPENAI_RESUMEGRADER_APIKEY;
+        if (!resumeGraderApiKey) {
+          throw new Error('API key not available');
+        }
+
+        const data = await uploadResumeAndExtractData(resumeGraderApiKey, userUid, uploadedFile);
+        console.log('Extracted Resume Data:', data); // Update state with extracted skills, experience, etc.
+      } catch (error) {
+        console.error('Error extracting resume:', error);
+      }
     }
   };
 
