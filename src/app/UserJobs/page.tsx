@@ -123,13 +123,12 @@ const Jobs: React.FC<{}> = () => {
 
   const sortBySalary = (order: string) => {
     const sorted = [...filteredJobs].sort((a, b) => {
-      const salaryA = parseFloat(a.salary.split('$')[1]);
-      const salaryB = parseFloat(b.salary.split('$')[1]);
-      return order === 'lowToHigh' ? salaryA - salaryB : salaryB - salaryA;
+      return order === 'lowToHigh' ? a.salary - b.salary : b.salary - a.salary;
     });
     setFilteredJobs(sorted);
     setSortOrder(order);
   };
+  
 
   const handleApply = (job: any) => {
     setApplyingJob(job);
