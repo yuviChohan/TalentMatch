@@ -4,7 +4,7 @@ interface JobCardProps {
   title: string;
   company: string;
   location: string;
-  salary: string;
+  salary: number;
   type: string;
   description: string;
 }
@@ -17,7 +17,7 @@ const JobCard: React.FC<JobCardProps> = ({ title, company, location, salary, typ
       <p className="text-sm text-gray-500">{location}</p>
       <div className="flex items-center mt-2">
         <span className="bg-blue-500 text-white rounded-full px-2 py-1 text-xs font-semibold">
-          {salary}
+          <p>${salary} per year</p>
         </span>
         <span className="ml-2 text-xs text-gray-600">{type}</span>
       </div>

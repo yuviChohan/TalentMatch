@@ -24,7 +24,7 @@ const Jobs: React.FC<{}> = () => {
       company: 'Starfield Industry Ltd. (The Starfield Group)',
       title: 'QA Technician',
       location: 'Calgary, Alberta',
-      salary: 'From $21 an hour',
+      salary: 45000,
       type: 'Full-time',
       application_deadline: { day: 31, month: 12, year: 2024 }, // Date object
       required_skills: ['quality assurance', 'inspection', 'documentation'],
@@ -39,7 +39,7 @@ const Jobs: React.FC<{}> = () => {
       company: 'Tech Solutions Inc.',
       title: 'Software Engineer',
       location: 'Vancouver, British Columbia',
-      salary: 'From $40 an hour',
+      salary: 85000,
       type: 'Full-time',
       application_deadline: { day: 31, month: 12, year: 2024 }, // Date object
       required_skills: ['JavaScript', 'Python', 'React', 'Node.js'],
@@ -54,7 +54,7 @@ const Jobs: React.FC<{}> = () => {
       company: 'Marketing Agency X',
       title: 'Marketing Manager',
       location: 'Toronto, Ontario',
-      salary: 'From $50 an hour',
+      salary: 105000,
       type: 'Full-time',
       application_deadline: { day: 31, month: 12, year: 2024 }, // Date object
       required_skills: ['marketing management', 'market trends', 'sales'],
@@ -68,7 +68,7 @@ const Jobs: React.FC<{}> = () => {
       company: 'Creative Studio Y',
       title: 'Graphic Designer',
       location: 'Montreal, Quebec',
-      salary: 'From $25 an hour',
+      salary: 55000,
       type: 'Part-time',
       application_deadline: { day: 31, month: 12, year: 2024 }, // Date object
       required_skills: ['Adobe Creative Suite', 'graphic design', 'brand consistency'],
@@ -287,7 +287,7 @@ const Jobs: React.FC<{}> = () => {
                   <p className="text-gray-700 mb-2">
                     <strong>Application Deadline:</strong> {formatDate(selectedJob.application_deadline)}
                   </p>
-                  <p className="text-gray-700 mb-4">{selectedJob.details}</p>
+                  <p className="text-gray-700 mb-4"> {selectedJob.details ? selectedJob.details : selectedJob.description}</p>
                   <button
                     onClick={() => handleApply(selectedJob)}
                     className="bg-blue-500 text-white rounded px-4 py-2"
