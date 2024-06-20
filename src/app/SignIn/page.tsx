@@ -20,7 +20,6 @@ const SignIn: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [showAdditionalInfo, setShowAdditionalInfo] = useState(false);
   const [showForgotPasswordPrompt, setShowForgotPasswordPrompt] = useState(false);
-  const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
   const [userInfo, setUserInfo] = useState({ "name": "", "dob": "", "uid": "", "is_owner": false, "is_admin": false, "phone_number": "", "email": "" });
 
   useEffect(() => {
@@ -28,7 +27,7 @@ const SignIn: React.FC = () => {
       if (currentUser) {
         setUser(currentUser);
         if (!currentUser.emailVerified) {
-          setIsVerifyingEmail(true);
+          setMessage("Please verify your email before signing in.");
         }
       } else {
         setUser(null);
@@ -73,21 +72,28 @@ const SignIn: React.FC = () => {
     setShowPassword(!showPassword);
   };
 
+  const redirectToSignIn = () => {
+    setIsSignUp(false);
+    setShowEmailForm(false);
+    setMessage("Signed up with email! Please verify your email and then sign in.");
+  };
+
   const redirectToHome = () => {
     window.location.href = "/Index";
   };
 
   const signInWithEmail = () => {
     signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
+      .then(async (userCredential) => {
         const user = userCredential.user;
+        await user.reload();
         if (user.emailVerified) {
           console.log(user);
           setMessage("Signed in with email!");
           redirectToHome();
         } else {
           setMessage("Please verify your email before signing in.");
-          setIsVerifyingEmail(true);
+          await signOut(auth);
         }
       })
       .catch((error) => {
@@ -106,11 +112,11 @@ const SignIn: React.FC = () => {
       .then(async (userCredential) => {
         const user = userCredential.user;
         console.log(user);
-        setMessage("Signed up with email! Please verify your email.");
-        await sendEmailVerification(user);
-        setIsVerifyingEmail(true);
         setUserInfo({ "name": firstName + " " + lastName, "dob": dob, "uid": user.uid, "is_owner": false, "is_admin": false, "phone_number": phone, "email": email });
+        await sendEmailVerification(user);
+        await signOut(auth);
         saveUserToDatabase();
+        redirectToSignIn();
       })
       .catch((error) => {
         console.error(error);
@@ -150,6 +156,7 @@ const SignIn: React.FC = () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
+      await user.reload();
       if (user.emailVerified) {
         console.log(user);
         setMessage("Signed in with Google!");
@@ -165,7 +172,7 @@ const SignIn: React.FC = () => {
         });
       } else {
         setMessage("Please verify your email before signing in.");
-        setIsVerifyingEmail(true);
+        await signOut(auth);
       }
     } catch (error: any) {
       console.error(error);
@@ -183,13 +190,13 @@ const SignIn: React.FC = () => {
       const methods = await fetchSignInMethodsForEmail(auth, user.email!);
       if (methods.length > 0) {
         setMessage("This email is already associated with an existing account.");
+        await signOut(auth);
         return;
       }
 
       console.log(user);
       await sendEmailVerification(user);
-      setMessage("Signed up with Google! Please verify your email.");
-      setIsVerifyingEmail(true);
+      await signOut(auth);
       setUserInfo({
         "name": user.displayName || "",
         "dob": dob,
@@ -199,10 +206,11 @@ const SignIn: React.FC = () => {
         "phone_number": phone,
         "email": user.email || ""
       });
+      setMessage("Signed up with Google! Please verify your email and then sign in.");
       setShowAdditionalInfo(true);
     } catch (error: any) {
       console.error(error);
-      setMessage("Error signing in with Google: " + (error.message || error.toString()));
+      setMessage("Error signing up with Google: " + (error.message || error.toString()));
     }
   };
 
@@ -240,7 +248,7 @@ const SignIn: React.FC = () => {
     try {
       await saveUserToDatabase();
       setShowAdditionalInfo(false);
-      setMessage("Signed up with Google!");
+      setMessage("Signed up with Google! Please verify your email and then sign in.");
     } catch (error) {
       console.error(error);
       setMessage("Error saving user to database.");
@@ -567,16 +575,6 @@ const SignIn: React.FC = () => {
                 Cancel
               </button>
               {message && <p className="mt-4 text-red-500 text-center">{message}</p>}
-            </div>
-          </div>
-        )}
-
-        {isVerifyingEmail && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
-            <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md text-center">
-              <h2 className="text-2xl font-bold mb-4">Verify Your Email</h2>
-              <p className="mb-4">A verification email has been sent to {email}. Please check your inbox and verify your email to continue.</p>
-              <p className="text-blue-500 cursor-pointer hover:underline" onClick={handleSignOut}>Log Out</p>
             </div>
           </div>
         )}
