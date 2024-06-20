@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import JobCard from '../components/JobCard';
 import ApplicationPage from '../components/ApplicationPage';
 
-const Jobs: React.FC = () => {
+const Jobs: React.FC<{}> = () => {
   const [selectedJob, setSelectedJob] = useState<any>(null);
   const [applyingJob, setApplyingJob] = useState<any>(null);
   const [jobTitle, setJobTitle] = useState<string>('');
@@ -26,7 +26,7 @@ const Jobs: React.FC = () => {
       location: 'Calgary, Alberta',
       salary: 'From $21 an hour',
       type: 'Full-time',
-      application_deadline: '2024-12-31',
+      application_deadline: { day: 31, month: 12, year: 2024 }, // Date object
       required_skills: ['quality assurance', 'inspection', 'documentation'],
       highly_preferred_skills: [''],
       rating: 4.5,
@@ -41,7 +41,7 @@ const Jobs: React.FC = () => {
       location: 'Vancouver, British Columbia',
       salary: 'From $40 an hour',
       type: 'Full-time',
-      application_deadline: '2024-12-31',
+      application_deadline: { day: 31, month: 12, year: 2024 }, // Date object
       required_skills: ['JavaScript', 'Python', 'React', 'Node.js'],
       highly_preferred_skills: [''],
       rating: 4.0,
@@ -56,7 +56,7 @@ const Jobs: React.FC = () => {
       location: 'Toronto, Ontario',
       salary: 'From $50 an hour',
       type: 'Full-time',
-      application_deadline: '2024-12-31',
+      application_deadline: { day: 31, month: 12, year: 2024 }, // Date object
       required_skills: ['marketing management', 'market trends', 'sales'],
       highly_preferred_skills: [''],
       active: true,
@@ -70,7 +70,7 @@ const Jobs: React.FC = () => {
       location: 'Montreal, Quebec',
       salary: 'From $25 an hour',
       type: 'Part-time',
-      application_deadline: '2024-12-31',
+      application_deadline: { day: 31, month: 12, year: 2024 }, // Date object
       required_skills: ['Adobe Creative Suite', 'graphic design', 'brand consistency'],
       highly_preferred_skills: [''],
       active: true,
@@ -85,7 +85,7 @@ const Jobs: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch('https://resumegraderapi.onrender.com/retrieve/jobs/');
+        const response = await fetch('https://resumegraderapi.onrender.com/jobs/');
         if (!response.ok) {
           throw new Error('Failed to fetch jobs');
         }
@@ -103,6 +103,11 @@ const Jobs: React.FC = () => {
     };
     fetchJobs();
   }, []);
+
+  const formatDate = (dateObject: { day: number, month: number, year: number }) => {
+    const { day, month, year } = dateObject;
+    return `${day.toString().padStart(2, '0')}-${month.toString().padStart(2, '0')}-${year}`;
+  };
 
   const handleSearch = () => {
     const filtered = jobs.filter(job => {
@@ -280,7 +285,7 @@ const Jobs: React.FC = () => {
                     <strong>Required Skills:</strong> {selectedJob.required_skills.join(', ')}
                   </p>
                   <p className="text-gray-700 mb-2">
-                    <strong>Application Deadline:</strong> {selectedJob.application_deadline}
+                    <strong>Application Deadline:</strong> {formatDate(selectedJob.application_deadline)}
                   </p>
                   <p className="text-gray-700 mb-4">{selectedJob.details}</p>
                   <button
