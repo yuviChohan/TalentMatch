@@ -1,6 +1,7 @@
 // src/app/UserProfile/page.tsx
 "use client";
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface WorkHistoryEntry {
   company: string;
@@ -25,6 +26,7 @@ const UserProfile: React.FC = () => {
 
   const currentDate = new Date().toISOString().split('T')[0];
   const minDate = new Date(new Date().setFullYear(new Date().getFullYear() - 50)).toISOString().split('T')[0];
+  const { uid } = useAuth();
 
   useEffect(() => {
     setAppliedJobs([
@@ -32,11 +34,53 @@ const UserProfile: React.FC = () => {
       { title: 'QA Technician', company: 'Starfield Industry Ltd.', status: 'Applied' },
       { title: 'Marketing Manager', company: 'Marketing Agency X', status: 'Rejected' },
     ]);
-  }, []);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setFile: React.Dispatch<React.SetStateAction<File | null>>) => {
+    if (!uid) {
+      alert('Please sign in to view your profile.');
+
+    }
+  }, [uid]);
+
+  const uploadResume = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch(`https://resumegraderapi.onrender.com/resumes/${uid}`, {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json'
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload resume');
+      }
+
+      const result = await response.json();
+      console.log('Resume upload successful:', result);
+      setSkills(result.skills);
+      const newWorkHistory = result.workHistory.map((exp: any) => ({
+        company: exp.company_name,
+        role: exp.title,
+        startDate: `${exp.start_date.year}-${String(exp.start_date.month).padStart(2, '0')}-${String(exp.start_date.day).padStart(2, '0')}`,
+        endDate: exp.end_date ? `${exp.end_date.year}-${String(exp.end_date.month).padStart(2, '0')}-${String(exp.end_date.day).padStart(2, '0')}` : '',
+        currentlyWorking: !exp.end_date,
+        isSaved: true,
+        isExpanded: false,
+        }));
+      setWorkHistory(newWorkHistory);
+    } catch (error) {
+      console.error('Error uploading resume:', error);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setResume: React.Dispatch<React.SetStateAction<File | null>>) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+      const file = e.target.files[0];
+      setResume(file);
+      uploadResume(file);
     }
   };
 
