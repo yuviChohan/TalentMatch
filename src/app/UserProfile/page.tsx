@@ -14,7 +14,6 @@ interface WorkHistoryEntry {
 }
 
 const UserProfile: React.FC = () => {
-  const { uid } = useAuth();
   const [firstName, setFirstName] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
@@ -27,6 +26,7 @@ const UserProfile: React.FC = () => {
 
   const currentDate = new Date().toISOString().split('T')[0];
   const minDate = new Date(new Date().setFullYear(new Date().getFullYear() - 50)).toISOString().split('T')[0];
+  const { uid } = useAuth();
 
   useEffect(() => {
     setAppliedJobs([
@@ -34,54 +34,53 @@ const UserProfile: React.FC = () => {
       { title: 'QA Technician', company: 'Starfield Industry Ltd.', status: 'Applied' },
       { title: 'Marketing Manager', company: 'Marketing Agency X', status: 'Rejected' },
     ]);
-  }, []);
 
-  // Call API to extract resume data
-  const uploadResumeAndExtractData = async (apiKey: string, uid: string, file: File) => {
+    if (!uid) {
+      alert('Please sign in to view your profile.');
+
+    }
+  }, [uid]);
+
+  const uploadResume = async (file: File) => {
     const formData = new FormData();
-    formData.append('apiKey', apiKey);
-    formData.append('uid', uid);
     formData.append('file', file);
-  
+
     try {
-      const response = await fetch('https://resumegraderapi.onrender.com/extract/resume', {
+      const response = await fetch(`https://resumegraderapi.onrender.com/resumes/${uid}`, {
         method: 'POST',
-        body: formData,
+        headers: {
+          'accept': 'application/json'
+        },
+        body: formData
       });
-  
+
       if (!response.ok) {
-        throw new Error('Failed to extract resume data');
+        throw new Error('Failed to upload resume');
       }
-  
-      const data = await response.json();
-      return data; // Return the extracted data
+
+      const result = await response.json();
+      console.log('Resume upload successful:', result);
+      setSkills(result.skills);
+      const newWorkHistory = result.workHistory.map((exp: any) => ({
+        company: exp.company_name,
+        role: exp.title,
+        startDate: `${exp.start_date.year}-${String(exp.start_date.month).padStart(2, '0')}-${String(exp.start_date.day).padStart(2, '0')}`,
+        endDate: exp.end_date ? `${exp.end_date.year}-${String(exp.end_date.month).padStart(2, '0')}-${String(exp.end_date.day).padStart(2, '0')}` : '',
+        currentlyWorking: !exp.end_date,
+        isSaved: true,
+        isExpanded: false,
+        }));
+      setWorkHistory(newWorkHistory);
     } catch (error) {
-      console.error('Error extracting resume data:', error);
-      throw error;
+      console.error('Error uploading resume:', error);
     }
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, setResume: React.Dispatch<React.SetStateAction<File | null>>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setResume: React.Dispatch<React.SetStateAction<File | null>>) => {
     if (e.target.files && e.target.files[0]) {
-      const uploadedFile = e.target.files[0];
-      setResume(uploadedFile);
-
-      try {
-        const userUid = uid;
-        if (!userUid) {
-          throw new Error('User UID not available');
-        }
-        console.log('API:', process.env.REACT_APP_OPENAI_RESUMEGRADER_APIKEY);
-        const resumeGraderApiKey = process.env.REACT_APP_OPENAI_RESUMEGRADER_APIKEY;
-        if (!resumeGraderApiKey) {
-          throw new Error('API key not available');
-        }
-
-        const data = await uploadResumeAndExtractData(resumeGraderApiKey, userUid, uploadedFile);
-        console.log('Extracted Resume Data:', data); // Update state with extracted skills, experience, etc.
-      } catch (error) {
-        console.error('Error extracting resume:', error);
-      }
+      const file = e.target.files[0];
+      setResume(file);
+      uploadResume(file);
     }
   };
 
