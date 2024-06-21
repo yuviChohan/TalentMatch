@@ -13,6 +13,15 @@ interface WorkHistoryEntry {
   isExpanded: boolean;
 }
 
+interface EducationEntry {
+  institution: string;
+  course: string;
+  startDate: string;
+  endDate: string;
+  isSaved: boolean;
+  isExpanded: boolean;
+}
+
 const UserProfile: React.FC = () => {
   const [firstName, setFirstName] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
@@ -20,6 +29,9 @@ const UserProfile: React.FC = () => {
   const [resume, setResume] = useState<File | null>(null);
   const [workHistory, setWorkHistory] = useState<WorkHistoryEntry[]>([
     { company: '', role: '', startDate: '', endDate: '', currentlyWorking: false, isSaved: false, isExpanded: true }
+  ]);
+  const [educationHistory, setEducationHistory] = useState<EducationEntry[]>([
+    { institution: '', course: '', startDate: '', endDate: '', isSaved: false, isExpanded: true }
   ]);
   const [skills, setSkills] = useState<string[]>([]);
   const [appliedJobs, setAppliedJobs] = useState<{ title: string; company: string; status: string; }[]>([]);
@@ -61,6 +73,7 @@ const UserProfile: React.FC = () => {
       const result = await response.json();
       console.log('Resume upload successful:', result);
       setSkills(result.skills);
+
       const newWorkHistory = result.workHistory.map((exp: any) => ({
         company: exp.company_name,
         role: exp.title,
@@ -71,6 +84,17 @@ const UserProfile: React.FC = () => {
         isExpanded: false,
         }));
       setWorkHistory(newWorkHistory);
+
+      const newEducationHistory = result.education.map((edu: any) => ({
+        institution: edu.institution,
+        course: edu.course_name,
+        startDate: `${edu.start_date.year}-${String(edu.start_date.month).padStart(2, '0')}-${String(edu.start_date.day).padStart(2, '0')}`,
+        endDate: `${edu.end_date.year}-${String(edu.end_date.month).padStart(2, '0')}-${String(edu.end_date.day).padStart(2, '0')}`,
+        isSaved: true,
+        isExpanded: false,
+      }));
+      setEducationHistory(newEducationHistory);
+
     } catch (error) {
       console.error('Error uploading resume:', error);
     }
@@ -98,6 +122,18 @@ const UserProfile: React.FC = () => {
     }
   };
 
+  const handleSaveEducationHistory = (index: number) => {
+    const newEducationHistory = [...educationHistory];
+    const entry = newEducationHistory[index];
+    if (entry.institution && entry.course && entry.startDate && entry.endDate) {
+      entry.isSaved = true;
+      entry.isExpanded = false;
+      setEducationHistory(newEducationHistory);
+    } else {
+      alert('Please fill in all fields before saving.');
+    }
+  };
+
   const handleAddWorkHistory = () => {
     setWorkHistory([...workHistory, { company: '', role: '', startDate: '', endDate: '', currentlyWorking: false, isSaved: false, isExpanded: true }]);
   };
@@ -108,16 +144,38 @@ const UserProfile: React.FC = () => {
     setWorkHistory(newWorkHistory);
   };
 
-  const handleToggleExpand = (index: number) => {
+  const handleAddEducationHistory = () => {
+    setEducationHistory([...educationHistory, { institution: '', course: '', startDate: '', endDate: '', isSaved: false, isExpanded: true }]);
+  };
+
+  const handleRemoveEducationHistoryFields = (index: number) => {
+    const newEducationHistory = [...educationHistory];
+    newEducationHistory.splice(index, 1);
+    setEducationHistory(newEducationHistory);
+  };
+
+  const handleToggleExpandWorkHistory = (index: number) => {
     const newWorkHistory = [...workHistory];
     newWorkHistory[index].isExpanded = !newWorkHistory[index].isExpanded;
     setWorkHistory(newWorkHistory);
+  };
+
+  const handleToggleExpandEducationHistory = (index: number) => {
+    const newEducationHistory = [...educationHistory];
+    newEducationHistory[index].isExpanded = !newEducationHistory[index].isExpanded;
+    setEducationHistory(newEducationHistory);
   };
 
   const handleEditWorkHistoryField = (index: number, field: keyof WorkHistoryEntry, value: string | boolean) => {
     const newWorkHistory = [...workHistory];
     newWorkHistory[index] = { ...newWorkHistory[index], [field]: value };
     setWorkHistory(newWorkHistory);
+  };
+
+  const handleEditEducationField = (index: number, field: keyof EducationEntry, value: string | boolean) => {
+    const newEducationHistory = [...educationHistory];
+    newEducationHistory[index] = { ...newEducationHistory[index], [field]: value };
+    setEducationHistory(newEducationHistory);
   };
 
   const handleAddSkill = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -140,17 +198,28 @@ const UserProfile: React.FC = () => {
       return entry;
     });
 
+    const savedEducationHistory = educationHistory.map((entry, index) => {
+      if (!entry.isSaved && entry.institution && entry.course && entry.startDate && entry.endDate) {
+        handleSaveEducationHistory(index);
+      }
+      return entry;
+    });
+
     setWorkHistory(savedWorkHistory);
+    setEducationHistory(savedEducationHistory);
+
     console.log('First Name:', firstName);
     console.log('Last Name:', lastName);
     console.log('Email:', email);
     console.log('Resume:', resume);
     console.log('Work History:', savedWorkHistory);
+    console.log('Education History:', savedEducationHistory);
     console.log('Skills:', skills);
     console.log('Applied Jobs:', appliedJobs);
     // Add your save logic (e.g., API call to save the data)
     alert('Profile saved successfully.');
   };
+
 
   const handleCheckJobStatus = () => {
     alert('This will redirect to the job status page or open a modal with job status details.');
@@ -223,7 +292,7 @@ const UserProfile: React.FC = () => {
             <div className="flex justify-between items-center mb-2">
               <h2 className="text-lg font-bold text-gray-700">Work History {index + 1}</h2>
               {item.isSaved && (
-                <button className="text-blue-500" onClick={() => handleToggleExpand(index)}>
+                <button className="text-blue-500" onClick={() => handleToggleExpandWorkHistory(index)}>
                   {item.isExpanded ? 'Collapse' : 'Expand'}
                 </button>
               )}
@@ -298,6 +367,40 @@ const UserProfile: React.FC = () => {
             Add
           </button>
         )}
+      </div>
+      <div>
+        <h2>Education History</h2>
+        {educationHistory.map((entry, index) => (
+          <div key={index}>
+            {entry.isExpanded ? (
+              <div>
+                <label>
+                  Institution:
+                  <input type="text" value={entry.institution} onChange={(e) => handleEditEducationField(index, 'institution', e.target.value)} />
+                </label>
+                <label>
+                  Course:
+                  <input type="text" value={entry.course} onChange={(e) => handleEditEducationField(index, 'course', e.target.value)} />
+                </label>
+                <label>
+                  Start Date:
+                  <input type="date" value={entry.startDate} min={minDate} max={currentDate} onChange={(e) => handleEditEducationField(index, 'startDate', e.target.value)} />
+                </label>
+                <label>
+                  End Date:
+                  <input type="date" value={entry.endDate} min={minDate} max={currentDate} onChange={(e) => handleEditEducationField(index, 'endDate', e.target.value)} />
+                </label>
+                <button onClick={() => handleSaveEducationHistory(index)}>Save</button>
+                <button onClick={() => handleRemoveEducationHistoryFields(index)}>Remove</button>
+              </div>
+            ) : (
+              <div onClick={() => handleToggleExpandEducationHistory(index)}>
+                <p>{entry.institution} - {entry.course}</p>
+              </div>
+            )}
+          </div>
+        ))}
+        <button onClick={handleAddEducationHistory}>Add Education History</button>
       </div>
       <div className="mb-4">
         <label className="block text-gray-700 font-bold mb-2">Skills:</label>
