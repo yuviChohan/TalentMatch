@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { auth } from "../firebase";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInAnonymously, signOut, onAuthStateChanged, sendPasswordResetEmail, fetchSignInMethodsForEmail, sendEmailVerification } from "firebase/auth";
 import Link from "next/link";
-import { useRouter } from 'next/navigation';
 
 const SignIn: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -20,7 +19,7 @@ const SignIn: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [showAdditionalInfo, setShowAdditionalInfo] = useState(false);
   const [showForgotPasswordPrompt, setShowForgotPasswordPrompt] = useState(false);
-  const [userInfo, setUserInfo] = useState({ "name": "", "dob": "", "uid": "", "is_owner": false, "is_admin": false, "phone_number": "", "email": "" });
+  const [userInfo, setUserInfo] = useState({ "first_name": "", "last_name": "", "dob": "", "uid": "", "is_owner": false, "is_admin": false, "phone_number": "", "email": "" });
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -50,12 +49,12 @@ const SignIn: React.FC = () => {
 
   const handleFirstNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFirstName(e.target.value);
-    setUserInfo({ ...userInfo, "name": e.target.value + " " + lastName });
+    setUserInfo({ ...userInfo, "first_name": e.target.value });
   };
 
   const handleLastNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLastName(e.target.value);
-    setUserInfo({ ...userInfo, "name": firstName + " " + e.target.value });
+    setUserInfo({ ...userInfo, "last_name": e.target.value });
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,6 +75,9 @@ const SignIn: React.FC = () => {
     setIsSignUp(false);
     setShowEmailForm(false);
     setMessage("Signed up with email! Please verify your email and then sign in.");
+    setTimeout(() => {
+      window.location.href = "/SignIn";
+    }, 3000);
   };
 
   const redirectToHome = () => {
@@ -112,7 +114,7 @@ const SignIn: React.FC = () => {
       .then(async (userCredential) => {
         const user = userCredential.user;
         console.log(user);
-        setUserInfo({ "name": firstName + " " + lastName, "dob": dob, "uid": user.uid, "is_owner": false, "is_admin": false, "phone_number": phone, "email": email });
+        setUserInfo({ "first_name": firstName, "last_name": lastName, "dob": dob, "uid": user.uid, "is_owner": false, "is_admin": false, "phone_number": phone, "email": email });
         await sendEmailVerification(user);
         await signOut(auth);
         saveUserToDatabase();
@@ -126,13 +128,14 @@ const SignIn: React.FC = () => {
 
   const saveUserToDatabase = async () => {
     try {
-      const response = await fetch('https://resumegraderapi.onrender.com/upload/user', {
+      const response = await fetch('https://resumegraderapi.onrender.com/users/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          "name": userInfo.name,
+          "first_name": userInfo.first_name,
+          "last_name": userInfo.last_name,
           "dob": userInfo.dob.split('-').reverse().join(''), // Assuming dob is in YYYY-MM-DD format
           "uid": userInfo.uid,
           "is_owner": false,
@@ -162,7 +165,8 @@ const SignIn: React.FC = () => {
         setMessage("Signed in with Google!");
         redirectToHome();
         setUserInfo({
-          "name": user.displayName || "",
+          "first_name": user.displayName?.split(' ')[0] || "",
+          "last_name": user.displayName?.split(' ')[1] || "",
           "dob": dob,
           "uid": user.uid,
           "is_owner": false,
@@ -198,7 +202,8 @@ const SignIn: React.FC = () => {
       await sendEmailVerification(user);
       await signOut(auth);
       setUserInfo({
-        "name": user.displayName || "",
+        "first_name": user.displayName?.split(' ')[0] || "",
+        "last_name": user.displayName?.split(' ')[1] || "",
         "dob": dob,
         "uid": user.uid,
         "is_owner": false,
@@ -318,6 +323,7 @@ const SignIn: React.FC = () => {
                     value={email}
                     onChange={handleEmailChange}
                     className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+                    autoComplete="email"
                   />
                 </div>
                 <div className="relative mb-4">
@@ -327,6 +333,7 @@ const SignIn: React.FC = () => {
                     value={password}
                     onChange={handlePasswordChange}
                     className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+                    autoComplete="current-password"
                   />
                   <button
                     type="button"
@@ -399,6 +406,7 @@ const SignIn: React.FC = () => {
                     value={firstName}
                     onChange={handleFirstNameChange}
                     className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+                    autoComplete="given-name"
                   />
                 </div>
                 <div className="mb-4">
@@ -408,6 +416,7 @@ const SignIn: React.FC = () => {
                     value={lastName}
                     onChange={handleLastNameChange}
                     className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+                    autoComplete="family-name"
                   />
                 </div>
                 <div className="mb-4">
@@ -417,6 +426,7 @@ const SignIn: React.FC = () => {
                     value={phone}
                     onChange={handlePhoneChange}
                     className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+                    autoComplete="tel"
                   />
                 </div>
                 <div className="mb-4">
@@ -437,6 +447,7 @@ const SignIn: React.FC = () => {
                     value={email}
                     onChange={handleEmailChange}
                     className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+                    autoComplete="email"
                   />
                 </div>
                 <div className="relative mb-4">
@@ -446,6 +457,7 @@ const SignIn: React.FC = () => {
                     value={password}
                     onChange={handlePasswordChange}
                     className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+                    autoComplete="new-password"
                   />
                   <button
                     type="button"
@@ -462,6 +474,7 @@ const SignIn: React.FC = () => {
                     value={confirmPassword}
                     onChange={handleConfirmPasswordChange}
                     className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+                    autoComplete="new-password"
                   />
                   <button
                     type="button"
@@ -502,6 +515,7 @@ const SignIn: React.FC = () => {
                   value={firstName}
                   onChange={handleFirstNameChange}
                   className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+                  autoComplete="given-name"
                 />
               </div>
               <div className="mb-4">
@@ -511,6 +525,7 @@ const SignIn: React.FC = () => {
                   value={lastName}
                   onChange={handleLastNameChange}
                   className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+                  autoComplete="family-name"
                 />
               </div>
               <div className="mb-4">
@@ -520,6 +535,7 @@ const SignIn: React.FC = () => {
                   value={phone}
                   onChange={handlePhoneChange}
                   className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+                  autoComplete="tel"
                 />
               </div>
               <div className="mb-4">
@@ -554,6 +570,7 @@ const SignIn: React.FC = () => {
                   value={email}
                   onChange={handleEmailChange}
                   className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
+                  autoComplete="email"
                 />
               </div>
               <button
