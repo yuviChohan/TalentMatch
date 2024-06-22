@@ -9,7 +9,6 @@ const Jobs: React.FC<{}> = () => {
   const [applyingJob, setApplyingJob] = useState<any>(null);
   const [jobTitle, setJobTitle] = useState<string>('');
   const [location, setLocation] = useState<string>('');
-  const [jobType, setJobType] = useState<string>('');
   const [job_type, setJobType] = useState<string>('');
   const [jobs, setJobs] = useState<any[]>([]);
   const [filteredJobs, setFilteredJobs] = useState<any[]>([]);
