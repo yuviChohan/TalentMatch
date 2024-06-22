@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { auth } from "../firebase";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInAnonymously, signOut, onAuthStateChanged, sendPasswordResetEmail, fetchSignInMethodsForEmail, sendEmailVerification } from "firebase/auth";
 import Link from "next/link";
-import { useRouter } from 'next/navigation';
 
 const SignIn: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -20,7 +19,6 @@ const SignIn: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [showAdditionalInfo, setShowAdditionalInfo] = useState(false);
   const [showForgotPasswordPrompt, setShowForgotPasswordPrompt] = useState(false);
-  const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
   const [userInfo, setUserInfo] = useState({ "uid": "", "first_name": "", "last_name": "", "dob": "", "is_owner": false, "is_admin": false, "phone_number": "", "email": "" });
 
   useEffect(() => {
@@ -28,7 +26,7 @@ const SignIn: React.FC = () => {
       if (currentUser) {
         setUser(currentUser);
         if (!currentUser.emailVerified) {
-          setIsVerifyingEmail(true);
+          setMessage("Please verify your email before signing in.");
         }
       } else {
         setUser(null);
@@ -52,7 +50,7 @@ const SignIn: React.FC = () => {
 
   const handleFirstNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFirstName(e.target.value);
-    setUserInfo((prev) => ({ ...prev, "first_name": e.target.value }));
+    setUserInfo((prev) => ({ ...prev, "first_name": e.target.value }));;
   };
 
   const handleLastNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,21 +72,28 @@ const SignIn: React.FC = () => {
     setShowPassword(!showPassword);
   };
 
+  const redirectToSignIn = () => {
+    setIsSignUp(false);
+    setShowEmailForm(false);
+    setMessage("Signed up with email! Please verify your email and then sign in.");
+  };
+
   const redirectToHome = () => {
     window.location.href = "/Index";
   };
 
   const signInWithEmail = () => {
     signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
+      .then(async (userCredential) => {
         const user = userCredential.user;
+        await user.reload();
         if (user.emailVerified) {
-          console.log(user); // For testing purposes
+          console.log(user);
           setMessage("Signed in with email!");
           redirectToHome();
         } else {
           setMessage("Please verify your email before signing in.");
-          setIsVerifyingEmail(true);
+          await signOut(auth);
         }
       })
       .catch((error) => {
@@ -106,9 +111,7 @@ const SignIn: React.FC = () => {
     createUserWithEmailAndPassword(auth, email, password)
       .then(async (userCredential) => {
         const user = userCredential.user;
-        console.log(user); // For testing purposes
-
-        // Update userInfo with the UID after user creation
+        console.log(user);
         const formattedDob = dob.split('-').reverse().join('');
         const updatedUserInfo = {
           uid: user.uid,
@@ -119,15 +122,13 @@ const SignIn: React.FC = () => {
           is_admin: false,
           phone_number: phone,
           email: email
-
         };
         setUserInfo(updatedUserInfo);
         console.log(updatedUserInfo.uid); // For testing purposes - uid
-        setMessage("Signed up with email! Please verify your email.");
         await sendEmailVerification(user);
-        setIsVerifyingEmail(true);
-
-
+        await signOut(auth);
+        saveUserToDatabase();
+        redirectToSignIn();
         await saveUserToDatabase(updatedUserInfo);
       })
       .catch((error) => {
@@ -136,16 +137,14 @@ const SignIn: React.FC = () => {
       });
   };
 
-  const saveUserToDatabase = async (userInfo: any) => {
-    console.log(userInfo); // For testing purposes
+  const saveUserToDatabase = async () => {
     try {
-      console.log(userInfo.uid); // For testing purposes
-      const response = await fetch('https://resumegraderapi.onrender.com/users/', {
+      const response = await fetch('https://resumegraderapi.onrender.com/upload/user', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(userInfo)
+        body: JSON.stringify(userInfo),
       });
       if (response.ok) {
         console.log("User saved to database");
@@ -162,23 +161,24 @@ const SignIn: React.FC = () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
+      await user.reload();
       if (user.emailVerified) {
         console.log(user);
         setMessage("Signed in with Google!");
         redirectToHome();
         setUserInfo({
-          "first_name": user.displayName?.split(' ')[0] || "",
-          "last_name": user.displayName?.split(' ')[1] || "",
-          "dob": dob,
-          "uid": user.uid,
-          "is_owner": false,
-          "is_admin": false,
-          "phone_number": phone,
-          "email": user.email || ""
-        });
+        "first_name": user.displayName?.split(' ')[0] || "",
+        "last_name": user.displayName?.split(' ')[1] || "",
+        "dob": dob,
+        "uid": user.uid,
+        "is_owner": false,
+        "is_admin": false,
+        "phone_number": phone,
+        "email": user.email || ""
+      });;
       } else {
         setMessage("Please verify your email before signing in.");
-        setIsVerifyingEmail(true);
+        await signOut(auth);
       }
     } catch (error: any) {
       console.error(error);
@@ -196,13 +196,13 @@ const SignIn: React.FC = () => {
       const methods = await fetchSignInMethodsForEmail(auth, user.email!);
       if (methods.length > 0) {
         setMessage("This email is already associated with an existing account.");
+        await signOut(auth);
         return;
       }
 
       console.log(user);
       await sendEmailVerification(user);
-      setMessage("Signed up with Google! Please verify your email.");
-      setIsVerifyingEmail(true);
+      await signOut(auth);
       setUserInfo({
         "first_name": user.displayName?.split(' ')[0] || "",
         "last_name": user.displayName?.split(' ')[1] || "",
@@ -213,10 +213,11 @@ const SignIn: React.FC = () => {
         "phone_number": phone,
         "email": user.email || ""
       });
+      setMessage("Signed up with Google! Please verify your email and then sign in.");
       setShowAdditionalInfo(true);
     } catch (error: any) {
       console.error(error);
-      setMessage("Error signing in with Google: " + (error.message || error.toString()));
+      setMessage("Error signing up with Google: " + (error.message || error.toString()));
     }
   };
 
@@ -581,16 +582,6 @@ const SignIn: React.FC = () => {
                 Cancel
               </button>
               {message && <p className="mt-4 text-red-500 text-center">{message}</p>}
-            </div>
-          </div>
-        )}
-
-        {isVerifyingEmail && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
-            <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md text-center">
-              <h2 className="text-2xl font-bold mb-4">Verify Your Email</h2>
-              <p className="mb-4">A verification email has been sent to {email}. Please check your inbox and verify your email to continue.</p>
-              <p className="text-blue-500 cursor-pointer hover:underline" onClick={handleSignOut}>Log Out</p>
             </div>
           </div>
         )}
