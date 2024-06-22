@@ -10,6 +10,7 @@ const Jobs: React.FC<{}> = () => {
   const [jobTitle, setJobTitle] = useState<string>('');
   const [location, setLocation] = useState<string>('');
   const [jobType, setJobType] = useState<string>('');
+  const [job_type, setJobType] = useState<string>('');
   const [jobs, setJobs] = useState<any[]>([]);
   const [filteredJobs, setFilteredJobs] = useState<any[]>([]);
   const [sortOrder, setSortOrder] = useState<string>('lowToHigh');
@@ -51,7 +52,7 @@ const Jobs: React.FC<{}> = () => {
       return (
         job.title.toLowerCase().includes(jobTitle.toLowerCase()) &&
         job.location.toLowerCase().includes(location.toLowerCase()) &&
-        (jobType === '' || job.type === jobType)
+        (job_type === '' || job.type === job_type)
       );
     });
     setFilteredJobs(filtered);
@@ -127,7 +128,7 @@ const Jobs: React.FC<{}> = () => {
     </select>
           <select
             className="border border-gray-300 rounded p-2 text-gray-700 flex-grow"
-            value={jobType}
+            value={job_type}
             onChange={(e) => setJobType(e.target.value)}
           >
             <option value="">Select Type</option>
@@ -173,7 +174,7 @@ const Jobs: React.FC<{}> = () => {
                       company={job.company}
                       location={job.location}
                       salary={job.salary}
-                      type={job.type}
+                      job_type={job.job_type}
                       description={`${job.description.substring(0, 100)}...`}
                     />
                   </div>
