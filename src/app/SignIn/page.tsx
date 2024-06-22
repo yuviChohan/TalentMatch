@@ -50,7 +50,7 @@ const SignIn: React.FC = () => {
 
   const handleFirstNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFirstName(e.target.value);
-    setUserInfo((prev) => ({ ...prev, "first_name": e.target.value }));;
+    setUserInfo((prev) => ({ ...prev, "first_name": e.target.value }));
   };
 
   const handleLastNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,7 +111,7 @@ const SignIn: React.FC = () => {
     createUserWithEmailAndPassword(auth, email, password)
       .then(async (userCredential) => {
         const user = userCredential.user;
-        console.log(user);
+        console.log(user); // For testing purposes
         const formattedDob = dob.split('-').reverse().join('');
         const updatedUserInfo = {
           uid: user.uid,
@@ -124,12 +124,10 @@ const SignIn: React.FC = () => {
           email: email
         };
         setUserInfo(updatedUserInfo);
-        console.log(updatedUserInfo.uid); // For testing purposes - uid
         await sendEmailVerification(user);
         await signOut(auth);
-        saveUserToDatabase();
+        await saveEmailUserToDatabase(updatedUserInfo);
         redirectToSignIn();
-        await saveUserToDatabase(updatedUserInfo);
       })
       .catch((error) => {
         console.error(error);
@@ -137,9 +135,29 @@ const SignIn: React.FC = () => {
       });
   };
 
+  // Handle sign up with email
+  const saveEmailUserToDatabase = async (userInfo: any) => {
+    try {
+      const response = await fetch('https://resumegraderapi.onrender.com/users/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userInfo),
+      });
+      if (response.ok) {
+        console.log("User saved to database");
+      } else {
+        console.error("Failed to save user to database");
+      }
+    } catch (error) {
+      console.error("Error saving user to database", error);
+    }
+  };
+
   const saveUserToDatabase = async () => {
     try {
-      const response = await fetch('https://resumegraderapi.onrender.com/upload/user', {
+      const response = await fetch('https://resumegraderapi.onrender.com/users/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -175,7 +193,7 @@ const SignIn: React.FC = () => {
         "is_admin": false,
         "phone_number": phone,
         "email": user.email || ""
-      });;
+      });
       } else {
         setMessage("Please verify your email before signing in.");
         await signOut(auth);
@@ -253,7 +271,7 @@ const SignIn: React.FC = () => {
     }
 
     try {
-      await saveUserToDatabase(userInfo); // Need further testing
+      await saveUserToDatabase(); // Need further testing
       setShowAdditionalInfo(false);
       setMessage("Signed up with Google!");
     } catch (error) {

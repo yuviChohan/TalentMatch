@@ -74,7 +74,7 @@ const UserProfile: React.FC = () => {
       console.log('Resume upload successful:', result);
       setSkills(result.skills);
 
-      const newWorkHistory = result.workHistory.map((exp: any) => ({
+      const newWorkHistory = result.experience.map((exp: any) => ({
         company: exp.company_name,
         role: exp.title,
         startDate: `${exp.start_date.year}-${String(exp.start_date.month).padStart(2, '0')}-${String(exp.start_date.day).padStart(2, '0')}`,
