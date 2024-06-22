@@ -1,8 +1,8 @@
 // src/app/Jobs/page.tsx
 "use client";
 import React, { useState } from 'react';
-import UserJobs from '../UserJobs/page'; // Assuming UserJobs is the user-specific jobs component
-import AdminJobs from '../AdminJobs/page'; // Assuming AdminJobs is the admin-specific jobs component
+import UserJobs from '../UserJobs/page'; 
+import AdminJobs from '../AdminJobs/page'; 
 import { useAuth } from '../contexts/AuthContext';
 
 const Jobs: React.FC = () => {
@@ -11,7 +11,7 @@ const Jobs: React.FC = () => {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-6 bg-gradient-to-r from-blue-100 to-blue-300">
-      <div >
+      <div>
         <div className="flex justify-between items-center mb-8">
           {role === 'admin' && (
             <div>
