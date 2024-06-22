@@ -19,7 +19,7 @@ const SignIn: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [showAdditionalInfo, setShowAdditionalInfo] = useState(false);
   const [showForgotPasswordPrompt, setShowForgotPasswordPrompt] = useState(false);
-  const [userInfo, setUserInfo] = useState({ "first_name": "", "last_name": "", "dob": "", "uid": "", "is_owner": false, "is_admin": false, "phone_number": "", "email": "" });
+  const [userInfo, setUserInfo] = useState({ "uid": "", "first_name": "", "last_name": "", "dob": "", "is_owner": false, "is_admin": false, "phone_number": "", "email": "" });
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -37,6 +37,7 @@ const SignIn: React.FC = () => {
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
+    setUserInfo((prev) => ({ ...prev, "email": e.target.value }));
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,22 +50,22 @@ const SignIn: React.FC = () => {
 
   const handleFirstNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFirstName(e.target.value);
-    setUserInfo({ ...userInfo, "first_name": e.target.value });
+    setUserInfo((prev) => ({ ...prev, "first_name": e.target.value }));;
   };
 
   const handleLastNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLastName(e.target.value);
-    setUserInfo({ ...userInfo, "last_name": e.target.value });
+    setUserInfo((prev) => ({ ...prev, "last_name": e.target.value }));
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPhone(e.target.value);
-    setUserInfo({ ...userInfo, "phone_number": e.target.value });
+    setUserInfo((prev) => ({ ...prev, "phone_number": e.target.value }));
   };
 
   const handleDobChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDob(e.target.value);
-    setUserInfo({ ...userInfo, "dob": e.target.value.split('-').reverse().join('') });
+    setUserInfo((prev) => ({ ...prev, "dob": e.target.value.split('-').reverse().join('') }));
   };
 
   const togglePasswordVisibility = () => {
@@ -75,9 +76,6 @@ const SignIn: React.FC = () => {
     setIsSignUp(false);
     setShowEmailForm(false);
     setMessage("Signed up with email! Please verify your email and then sign in.");
-    setTimeout(() => {
-      window.location.href = "/SignIn";
-    }, 3000);
   };
 
   const redirectToHome = () => {
@@ -114,11 +112,24 @@ const SignIn: React.FC = () => {
       .then(async (userCredential) => {
         const user = userCredential.user;
         console.log(user);
-        setUserInfo({ "first_name": firstName, "last_name": lastName, "dob": dob, "uid": user.uid, "is_owner": false, "is_admin": false, "phone_number": phone, "email": email });
+        const formattedDob = dob.split('-').reverse().join('');
+        const updatedUserInfo = {
+          uid: user.uid,
+          first_name: firstName,
+          last_name: lastName,
+          dob: formattedDob,
+          is_owner: false,
+          is_admin: false,
+          phone_number: phone,
+          email: email
+        };
+        setUserInfo(updatedUserInfo);
+        console.log(updatedUserInfo.uid); // For testing purposes - uid
         await sendEmailVerification(user);
         await signOut(auth);
         saveUserToDatabase();
         redirectToSignIn();
+        await saveUserToDatabase(updatedUserInfo);
       })
       .catch((error) => {
         console.error(error);
@@ -128,21 +139,12 @@ const SignIn: React.FC = () => {
 
   const saveUserToDatabase = async () => {
     try {
-      const response = await fetch('https://resumegraderapi.onrender.com/users/', {
+      const response = await fetch('https://resumegraderapi.onrender.com/upload/user', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          "first_name": userInfo.first_name,
-          "last_name": userInfo.last_name,
-          "dob": userInfo.dob.split('-').reverse().join(''), // Assuming dob is in YYYY-MM-DD format
-          "uid": userInfo.uid,
-          "is_owner": false,
-          "is_admin": false,
-          "phone_number": userInfo.phone_number,
-          "email": userInfo.email
-        }),
+        body: JSON.stringify(userInfo),
       });
       if (response.ok) {
         console.log("User saved to database");
@@ -165,15 +167,15 @@ const SignIn: React.FC = () => {
         setMessage("Signed in with Google!");
         redirectToHome();
         setUserInfo({
-          "first_name": user.displayName?.split(' ')[0] || "",
-          "last_name": user.displayName?.split(' ')[1] || "",
-          "dob": dob,
-          "uid": user.uid,
-          "is_owner": false,
-          "is_admin": false,
-          "phone_number": phone,
-          "email": user.email || ""
-        });
+        "first_name": user.displayName?.split(' ')[0] || "",
+        "last_name": user.displayName?.split(' ')[1] || "",
+        "dob": dob,
+        "uid": user.uid,
+        "is_owner": false,
+        "is_admin": false,
+        "phone_number": phone,
+        "email": user.email || ""
+      });;
       } else {
         setMessage("Please verify your email before signing in.");
         await signOut(auth);
@@ -251,9 +253,9 @@ const SignIn: React.FC = () => {
     }
 
     try {
-      await saveUserToDatabase();
+      await saveUserToDatabase(userInfo); // Need further testing
       setShowAdditionalInfo(false);
-      setMessage("Signed up with Google! Please verify your email and then sign in.");
+      setMessage("Signed up with Google!");
     } catch (error) {
       console.error(error);
       setMessage("Error saving user to database.");
@@ -323,7 +325,6 @@ const SignIn: React.FC = () => {
                     value={email}
                     onChange={handleEmailChange}
                     className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
-                    autoComplete="email"
                   />
                 </div>
                 <div className="relative mb-4">
@@ -333,7 +334,6 @@ const SignIn: React.FC = () => {
                     value={password}
                     onChange={handlePasswordChange}
                     className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
-                    autoComplete="current-password"
                   />
                   <button
                     type="button"
@@ -406,7 +406,6 @@ const SignIn: React.FC = () => {
                     value={firstName}
                     onChange={handleFirstNameChange}
                     className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
-                    autoComplete="given-name"
                   />
                 </div>
                 <div className="mb-4">
@@ -416,7 +415,6 @@ const SignIn: React.FC = () => {
                     value={lastName}
                     onChange={handleLastNameChange}
                     className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
-                    autoComplete="family-name"
                   />
                 </div>
                 <div className="mb-4">
@@ -426,7 +424,6 @@ const SignIn: React.FC = () => {
                     value={phone}
                     onChange={handlePhoneChange}
                     className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
-                    autoComplete="tel"
                   />
                 </div>
                 <div className="mb-4">
@@ -447,7 +444,6 @@ const SignIn: React.FC = () => {
                     value={email}
                     onChange={handleEmailChange}
                     className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
-                    autoComplete="email"
                   />
                 </div>
                 <div className="relative mb-4">
@@ -457,7 +453,6 @@ const SignIn: React.FC = () => {
                     value={password}
                     onChange={handlePasswordChange}
                     className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
-                    autoComplete="new-password"
                   />
                   <button
                     type="button"
@@ -474,7 +469,6 @@ const SignIn: React.FC = () => {
                     value={confirmPassword}
                     onChange={handleConfirmPasswordChange}
                     className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
-                    autoComplete="new-password"
                   />
                   <button
                     type="button"
@@ -515,7 +509,6 @@ const SignIn: React.FC = () => {
                   value={firstName}
                   onChange={handleFirstNameChange}
                   className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
-                  autoComplete="given-name"
                 />
               </div>
               <div className="mb-4">
@@ -525,7 +518,6 @@ const SignIn: React.FC = () => {
                   value={lastName}
                   onChange={handleLastNameChange}
                   className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
-                  autoComplete="family-name"
                 />
               </div>
               <div className="mb-4">
@@ -535,7 +527,6 @@ const SignIn: React.FC = () => {
                   value={phone}
                   onChange={handlePhoneChange}
                   className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
-                  autoComplete="tel"
                 />
               </div>
               <div className="mb-4">
@@ -570,7 +561,6 @@ const SignIn: React.FC = () => {
                   value={email}
                   onChange={handleEmailChange}
                   className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
-                  autoComplete="email"
                 />
               </div>
               <button
