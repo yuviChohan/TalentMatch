@@ -1,7 +1,7 @@
-// src/app/UserProfile/page.tsx
 "use client";
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import Link from 'next/link';
 
 interface WorkHistoryEntry {
   company: string;
@@ -49,7 +49,6 @@ const UserProfile: React.FC = () => {
 
     if (!uid) {
       alert('Please sign in to view your profile.');
-
     }
   }, [uid]);
 
@@ -74,7 +73,7 @@ const UserProfile: React.FC = () => {
       console.log('Resume upload successful:', result);
       setSkills(result.skills);
 
-      const newWorkHistory = result.workHistory.map((exp: any) => ({
+      const newWorkHistory = result.experience.map((exp: any) => ({
         company: exp.company_name,
         role: exp.title,
         startDate: `${exp.start_date.year}-${String(exp.start_date.month).padStart(2, '0')}-${String(exp.start_date.day).padStart(2, '0')}`,
@@ -82,7 +81,7 @@ const UserProfile: React.FC = () => {
         currentlyWorking: !exp.end_date,
         isSaved: true,
         isExpanded: false,
-        }));
+      }));
       setWorkHistory(newWorkHistory);
 
       const newEducationHistory = result.education.map((edu: any) => ({
@@ -220,28 +219,14 @@ const UserProfile: React.FC = () => {
     alert('Profile saved successfully.');
   };
 
-
-  const handleCheckJobStatus = () => {
-    alert('This will redirect to the job status page or open a modal with job status details.');
-    // Add logic to redirect or open modal for job status
-  };
-
-  useEffect(() => {
-    if (workHistory.length > 1) {
-      const lastEntry = workHistory[workHistory.length - 1];
-      if (!lastEntry.company && !lastEntry.role && !lastEntry.startDate && !lastEntry.endDate && !lastEntry.isSaved) {
-        const newWorkHistory = workHistory.slice(0, -1);
-        setWorkHistory(newWorkHistory);
-      }
-    }
-  }, [workHistory]);
-
   return (
     <div className="w-full max-w-4xl bg-white shadow-xl rounded-xl p-10">
       <div className="flex justify-between items-center mb-4">
-        <button className="bg-gray-500 text-white rounded px-4 py-2" onClick={handleCheckJobStatus}>
-          Your Applications
-        </button>
+        <Link href="/YourApplication">
+          <span className="bg-blue-500 text-white rounded px-4 py-2 cursor-pointer hover:bg-blue-600 transition-colors">
+            Your Applications
+          </span>
+        </Link>
       </div>
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
@@ -399,7 +384,12 @@ const UserProfile: React.FC = () => {
                 </label>
                 <label className="block text-gray-700 mb-2">
                   End Date:
-                  <input type="date" value={entry.endDate} min={minDate} max={currentDate} onChange={(e) => handleEditEducationField(index, 'endDate', e.target.value)} />
+                  <input type="date" 
+                  value={entry.endDate} 
+                  min={minDate} 
+                  max={currentDate}
+                  className="border border-gray-300 rounded p-2 w-full text-black"
+                  onChange={(e) => handleEditEducationField(index, 'endDate', e.target.value)} />
                 </label>
                 <button className="bg-green-500 text-white rounded px-4 py-2" onClick={() => handleSaveEducationHistory(index)}>Save</button>
                 <button className="bg-red-500 text-white rounded px-4 py-2 ml-2" onClick={() => handleRemoveEducationHistoryFields(index)}>Remove</button>
@@ -411,7 +401,9 @@ const UserProfile: React.FC = () => {
             )}
           </div>
         ))}
-        <button onClick={handleAddEducationHistory}>Add Education History</button>
+        <button className="bg-blue-500 text-white rounded px-4 py-2" onClick={handleAddEducationHistory}>
+          Add Education History
+        </button>
       </div>
       <div className="mb-4">
         <label className="block text-gray-700 font-bold mb-2">Skills:</label>
