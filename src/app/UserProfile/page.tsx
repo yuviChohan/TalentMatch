@@ -272,7 +272,7 @@ const UserProfile: React.FC = () => {
           />
         </div>
         <div className="col-span-2">
-          <label className="block text-gray-700 font-bold mb-2">Add Resume:</label>
+          <label className="block text-gray-700 font-bold mb-2">Upload Resume:</label>
           <label className="block border border-gray-300 rounded p-4 text-center cursor-pointer hover:bg-gray-200">
             <input
               type="file"
@@ -280,17 +280,17 @@ const UserProfile: React.FC = () => {
               className="hidden"
               onChange={(e) => handleFileChange(e, setResume)}
             />
-            <span className="text-gray-500">{resume ? resume.name : "Click to upload"}</span>
+            <span className="text-gray-500">{resume ? resume.name : "Select a File"}</span>
           </label>
           {resume && <button className="text-red-500 mt-2" onClick={handleRemoveResume}>Remove</button>}
         </div>
       </div>
       <div className="mb-4">
-        <h2 className="block text-gray-700 font-bold mb-2">Work History:</h2>
+        <h2 className="block text-gray-700 font-bold mb-2">Work Experience:</h2>
         {workHistory.map((item, index) => (
           <div key={index} className="border border-gray-300 rounded p-4 mb-2 relative">
             <div className="flex justify-between items-center mb-2">
-              <h2 className="text-lg font-bold text-gray-700">Work History {index + 1}</h2>
+              {/*<h2 className="text-lg font-bold text-gray-700">Company {index + 1}</h2>*/}
               {item.isSaved && (
                 <button className="text-blue-500" onClick={() => handleToggleExpandWorkHistory(index)}>
                   {item.isExpanded ? 'Collapse' : 'Expand'}
@@ -299,20 +299,22 @@ const UserProfile: React.FC = () => {
             </div>
             {item.isExpanded && (
               <>
-                <input
-                  type="text"
-                  placeholder="Company"
-                  className="border border-gray-300 rounded p-2 mb-2 w-full text-black"
-                  value={item.company}
-                  onChange={(e) => handleEditWorkHistoryField(index, 'company', e.target.value)}
-                />
-                <input
-                  type="text"
-                  placeholder="Role"
-                  className="border border-gray-300 rounded p-2 mb-2 w-full text-black"
-                  value={item.role}
-                  onChange={(e) => handleEditWorkHistoryField(index, 'role', e.target.value)}
-                />
+                <label className="block text-gray-700 mb-2">Company Name:
+                  <input
+                    type="text"
+                    className="border border-gray-300 rounded p-2 mb-2 w-full text-black"
+                    value={item.company}
+                    onChange={(e) => handleEditWorkHistoryField(index, 'company', e.target.value)}
+                  />
+                </label>
+                <label className="block text-gray-700 mb-2">Role:
+                  <input
+                    type="text"
+                    className="border border-gray-300 rounded p-2 mb-2 w-full text-black"
+                    value={item.role}
+                    onChange={(e) => handleEditWorkHistoryField(index, 'role', e.target.value)}
+                  />
+                </label>
                 <div className="mb-2">
                   <label className="block text-gray-700 mb-2">Start Date:</label>
                   <input
@@ -369,7 +371,7 @@ const UserProfile: React.FC = () => {
         )}
       </div>
       <div>
-        <h2 className="block text-gray-700 font-bold mb-2">Education History:</h2>
+        <h2 className="block text-gray-700 font-bold mb-2">Education:</h2>
         {educationHistory.map((entry, index) => (
           <div key={index} className="border border-gray-300 rounded p-4 mb-2 relative">
             {entry.isExpanded ? (
