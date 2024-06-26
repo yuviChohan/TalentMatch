@@ -286,7 +286,7 @@ const UserProfile: React.FC = () => {
         </div>
       </div>
       <div className="mb-4">
-        <h2 className="block text-gray-700 font-bold mb-2">Add Work History:</h2>
+        <h2 className="block text-gray-700 font-bold mb-2">Work History:</h2>
         {workHistory.map((item, index) => (
           <div key={index} className="border border-gray-300 rounded p-4 mb-2 relative">
             <div className="flex justify-between items-center mb-2">
@@ -376,30 +376,35 @@ const UserProfile: React.FC = () => {
               <div className='mb-2'>
                 <label className="block text-gray-700 mb-2">
                   Institution:
-                  <input type="text" 
-                  value={entry.institution} 
-                  className="border border-gray-300 rounded p-2 mb-2 w-full text-black"
-                  onChange={(e) => handleEditEducationField(index, 'institution', e.target.value)} />
+                  <input type="text"
+                    value={entry.institution}
+                    className="border border-gray-300 rounded p-2 mb-2 w-full text-black"
+                    onChange={(e) => handleEditEducationField(index, 'institution', e.target.value)} />
                 </label>
                 <label className="block text-gray-700 mb-2">
                   Course:
-                  <input type="text" 
-                  value={entry.course} 
-                  className="border border-gray-300 rounded p-2 mb-2 w-full text-black"
-                  onChange={(e) => handleEditEducationField(index, 'course', e.target.value)} />
+                  <input type="text"
+                    value={entry.course}
+                    className="border border-gray-300 rounded p-2 mb-2 w-full text-black"
+                    onChange={(e) => handleEditEducationField(index, 'course', e.target.value)} />
                 </label>
                 <label className="block text-gray-700 mb-2">
                   Start Date:
-                  <input type="date" 
-                  value={entry.startDate} 
-                  min={minDate} 
-                  max={currentDate}
-                  className="border border-gray-300 rounded p-2 w-full text-black"
-                  onChange={(e) => handleEditEducationField(index, 'startDate', e.target.value)} />
+                  <input type="date"
+                    value={entry.startDate}
+                    min={minDate}
+                    max={currentDate}
+                    className="border border-gray-300 rounded p-2 w-full text-black"
+                    onChange={(e) => handleEditEducationField(index, 'startDate', e.target.value)} />
                 </label>
                 <label className="block text-gray-700 mb-2">
                   End Date:
-                  <input type="date" value={entry.endDate} min={minDate} max={currentDate} onChange={(e) => handleEditEducationField(index, 'endDate', e.target.value)} />
+                  <input type="date"
+                    value={entry.endDate}
+                    min={minDate}
+                    max={currentDate}
+                    className="border border-gray-300 rounded p-2 w-full text-black"
+                    onChange={(e) => handleEditEducationField(index, 'endDate', e.target.value)} />
                 </label>
                 <button className="bg-green-500 text-white rounded px-4 py-2" onClick={() => handleSaveEducationHistory(index)}>Save</button>
                 <button className="bg-red-500 text-white rounded px-4 py-2 ml-2" onClick={() => handleRemoveEducationHistoryFields(index)}>Remove</button>
@@ -442,6 +447,7 @@ const UserProfile: React.FC = () => {
       </div>
     </div>
   );
+  
 };
 
 export default UserProfile;
