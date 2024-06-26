@@ -11,6 +11,7 @@ interface WorkHistoryEntry {
   currentlyWorking: boolean;
   isSaved: boolean;
   isExpanded: boolean;
+  description: string;
 }
 
 interface EducationEntry {
@@ -28,7 +29,7 @@ const UserProfile: React.FC = () => {
   const [email, setEmail] = useState<string>('');
   const [resume, setResume] = useState<File | null>(null);
   const [workHistory, setWorkHistory] = useState<WorkHistoryEntry[]>([
-    { company: '', role: '', startDate: '', endDate: '', currentlyWorking: false, isSaved: false, isExpanded: true }
+    { company: '', role: '', startDate: '', endDate: '', currentlyWorking: false, isSaved: false, isExpanded: true, description: ''}
   ]);
   const [educationHistory, setEducationHistory] = useState<EducationEntry[]>([
     { institution: '', course: '', startDate: '', endDate: '', isSaved: false, isExpanded: true }
@@ -40,18 +41,18 @@ const UserProfile: React.FC = () => {
   const minDate = new Date(new Date().setFullYear(new Date().getFullYear() - 50)).toISOString().split('T')[0];
   const { uid } = useAuth();
 
-  useEffect(() => {
-    setAppliedJobs([
-      { title: 'Software Engineer', company: 'Tech Solutions Inc.', status: 'Interview Scheduled' },
-      { title: 'QA Technician', company: 'Starfield Industry Ltd.', status: 'Applied' },
-      { title: 'Marketing Manager', company: 'Marketing Agency X', status: 'Rejected' },
-    ]);
+  // useEffect(() => {
+  //   setAppliedJobs([
+  //     { title: 'Software Engineer', company: 'Tech Solutions Inc.', status: 'Interview Scheduled' },
+  //     { title: 'QA Technician', company: 'Starfield Industry Ltd.', status: 'Applied' },
+  //     { title: 'Marketing Manager', company: 'Marketing Agency X', status: 'Rejected' },
+  //   ]);
 
-    if (!uid) {
-      alert('Please sign in to view your profile.');
+  //   if (!uid) {
+  //     alert('Please sign in to view your profile.');
 
-    }
-  }, [uid]);
+  //   }
+  // }, [uid]);
 
   const uploadResume = async (file: File) => {
     const formData = new FormData();
@@ -82,6 +83,7 @@ const UserProfile: React.FC = () => {
         currentlyWorking: !exp.end_date,
         isSaved: true,
         isExpanded: false,
+        description: exp.description || '',
         }));
       setWorkHistory(newWorkHistory);
 
@@ -94,6 +96,8 @@ const UserProfile: React.FC = () => {
         isExpanded: false,
       }));
       setEducationHistory(newEducationHistory);
+      console.log('New Work History:', newWorkHistory);
+      console.log('New Education History:', newEducationHistory);
 
     } catch (error) {
       console.error('Error uploading resume:', error);
@@ -135,7 +139,7 @@ const UserProfile: React.FC = () => {
   };
 
   const handleAddWorkHistory = () => {
-    setWorkHistory([...workHistory, { company: '', role: '', startDate: '', endDate: '', currentlyWorking: false, isSaved: false, isExpanded: true }]);
+    setWorkHistory([...workHistory, { company: '', role: '', startDate: '', endDate: '', currentlyWorking: false, isSaved: false, isExpanded: true, description: '' }]);
   };
 
   const handleRemoveWorkHistoryFields = (index: number) => {
@@ -190,24 +194,82 @@ const UserProfile: React.FC = () => {
     setSkills(newSkills);
   };
 
-  const handleSaveProfile = () => {
+  const handleSaveProfile = async () => {
     const savedWorkHistory = workHistory.map((entry, index) => {
       if (!entry.isSaved && entry.company && entry.role && entry.startDate && (entry.endDate || entry.currentlyWorking)) {
         handleSaveWorkHistory(index);
       }
       return entry;
     });
-
+  
     const savedEducationHistory = educationHistory.map((entry, index) => {
       if (!entry.isSaved && entry.institution && entry.course && entry.startDate && entry.endDate) {
         handleSaveEducationHistory(index);
       }
       return entry;
     });
-
+  
     setWorkHistory(savedWorkHistory);
     setEducationHistory(savedEducationHistory);
-
+  
+    const formattedExperience = savedWorkHistory.map(entry => ({
+      start_date: {
+        day: parseInt(entry.startDate.split('-')[2]),
+        month: parseInt(entry.startDate.split('-')[1]),
+        year: parseInt(entry.startDate.split('-')[0]),
+      },
+      end_date: entry.currentlyWorking ? null : {
+        day: parseInt(entry.endDate.split('-')[2]),
+        month: parseInt(entry.endDate.split('-')[1]),
+        year: parseInt(entry.endDate.split('-')[0]),
+      },
+      title: entry.role,
+      company_name: entry.company,
+      description: entry.description || "",
+    }));
+  
+    const formattedEducation = savedEducationHistory.map(entry => ({
+      start_date: {
+        day: parseInt(entry.startDate.split('-')[2]),
+        month: parseInt(entry.startDate.split('-')[1]),
+        year: parseInt(entry.startDate.split('-')[0]),
+      },
+      end_date: {
+        day: parseInt(entry.endDate.split('-')[2]),
+        month: parseInt(entry.endDate.split('-')[1]),
+        year: parseInt(entry.endDate.split('-')[0]),
+      },
+      institution: entry.institution,
+      course_name: entry.course,
+    }));
+  
+    const payload = {
+      uid,
+      skills,
+      experience: formattedExperience,
+      education: formattedEducation,
+    };
+  
+    try {
+      const response = await fetch(`https://resumegraderapi.onrender.com/resumes/${uid}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+  
+      if (response.ok) {
+        alert('Profile saved successfully.');
+      } else {
+        console.error('Error saving profile:', response.statusText);
+        alert('Failed to save profile.');
+      }
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      alert('Failed to save profile.');
+    }
+  
     console.log('First Name:', firstName);
     console.log('Last Name:', lastName);
     console.log('Email:', email);
@@ -216,14 +278,6 @@ const UserProfile: React.FC = () => {
     console.log('Education History:', savedEducationHistory);
     console.log('Skills:', skills);
     console.log('Applied Jobs:', appliedJobs);
-    // Add your save logic (e.g., API call to save the data)
-    alert('Profile saved successfully.');
-  };
-
-
-  const handleCheckJobStatus = () => {
-    alert('This will redirect to the job status page or open a modal with job status details.');
-    // Add logic to redirect or open modal for job status
   };
 
   useEffect(() => {
@@ -234,15 +288,15 @@ const UserProfile: React.FC = () => {
         setWorkHistory(newWorkHistory);
       }
     }
-  }, [workHistory]);
+  }, [workHistory, educationHistory]);
 
   return (
     <div className="w-full max-w-4xl bg-white shadow-xl rounded-xl p-10">
-      <div className="flex justify-between items-center mb-4">
+      {/* <div className="flex justify-between items-center mb-4">
         <button className="bg-gray-500 text-white rounded px-4 py-2" onClick={handleCheckJobStatus}>
           Your Applications
         </button>
-      </div>
+      </div> */}
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
           <label className="block text-gray-700 font-bold mb-2">First Name:</label>
@@ -291,6 +345,9 @@ const UserProfile: React.FC = () => {
           <div key={index} className="border border-gray-300 rounded p-4 mb-2 relative">
             <div className="flex justify-between items-center mb-2">
               {/*<h2 className="text-lg font-bold text-gray-700">Company {index + 1}</h2>*/}
+              {item.isSaved && !item.isExpanded && (
+              <span className="text-md text-gray-700">{item.company}</span>
+              )}
               {item.isSaved && (
                 <button className="text-blue-500" onClick={() => handleToggleExpandWorkHistory(index)}>
                   {item.isExpanded ? 'Collapse' : 'Expand'}
@@ -320,7 +377,7 @@ const UserProfile: React.FC = () => {
                   <input
                     type="date"
                     className="border border-gray-300 rounded p-2 w-full text-black"
-                    value={item.startDate}
+                    defaultValue={item.startDate}
                     max={currentDate}
                     min={minDate}
                     onChange={(e) => handleEditWorkHistoryField(index, 'startDate', e.target.value)}
@@ -332,7 +389,7 @@ const UserProfile: React.FC = () => {
                     <input
                       type="date"
                       className="border border-gray-300 rounded p-2 w-full text-black"
-                      value={item.endDate}
+                      defaultValue={item.endDate}
                       max={currentDate}
                       min={item.startDate}
                       onChange={(e) => handleEditWorkHistoryField(index, 'endDate', e.target.value)}
@@ -347,6 +404,14 @@ const UserProfile: React.FC = () => {
                     onChange={(e) => handleEditWorkHistoryField(index, 'currentlyWorking', e.target.checked)}
                   />
                   <label className="text-gray-700">I currently work here</label>
+                </div>
+                <div className="mb-2">
+                  <label className="block text-gray-700 mb-2">Description:</label>
+                    <textarea
+                      className="border border-gray-300 rounded p-2 mb-2 w-full text-black"
+                      value={item.description}
+                      onChange={(e) => handleEditWorkHistoryField(index, 'description', e.target.value)}
+                    />
                 </div>
                 <button
                   className="bg-green-500 text-white rounded px-4 py-2"
@@ -374,51 +439,60 @@ const UserProfile: React.FC = () => {
         <h2 className="block text-gray-700 font-bold mb-2">Education:</h2>
         {educationHistory.map((entry, index) => (
           <div key={index} className="border border-gray-300 rounded p-4 mb-2 relative">
-            {entry.isExpanded ? (
-              <div className='mb-2'>
-                <label className="block text-gray-700 mb-2">
-                  Institution:
-                  <input type="text"
-                    value={entry.institution}
-                    className="border border-gray-300 rounded p-2 mb-2 w-full text-black"
-                    onChange={(e) => handleEditEducationField(index, 'institution', e.target.value)} />
-                </label>
-                <label className="block text-gray-700 mb-2">
-                  Course:
-                  <input type="text"
-                    value={entry.course}
-                    className="border border-gray-300 rounded p-2 mb-2 w-full text-black"
-                    onChange={(e) => handleEditEducationField(index, 'course', e.target.value)} />
-                </label>
-                <label className="block text-gray-700 mb-2">
-                  Start Date:
-                  <input type="date"
-                    value={entry.startDate}
-                    min={minDate}
-                    max={currentDate}
-                    className="border border-gray-300 rounded p-2 w-full text-black"
-                    onChange={(e) => handleEditEducationField(index, 'startDate', e.target.value)} />
-                </label>
-                <label className="block text-gray-700 mb-2">
-                  End Date:
-                  <input type="date"
-                    value={entry.endDate}
-                    min={minDate}
-                    max={currentDate}
-                    className="border border-gray-300 rounded p-2 w-full text-black"
-                    onChange={(e) => handleEditEducationField(index, 'endDate', e.target.value)} />
-                </label>
-                <button className="bg-green-500 text-white rounded px-4 py-2" onClick={() => handleSaveEducationHistory(index)}>Save</button>
-                <button className="bg-red-500 text-white rounded px-4 py-2 ml-2" onClick={() => handleRemoveEducationHistoryFields(index)}>Remove</button>
-              </div>
-            ) : (
-              <div onClick={() => handleToggleExpandEducationHistory(index)}>
-                <p>{entry.institution} - {entry.course}</p>
-              </div>
+            <div className="flex justify-between items-center mb-2">
+              {entry.isSaved && !entry.isExpanded && (
+                <span className="text-md text-gray-700">{entry.institution}</span>
+              )}
+              {entry.isSaved && (
+                <button className="text-blue-500" onClick={() => handleToggleExpandEducationHistory(index)}>
+                  {entry.isExpanded ? 'Collapse' : 'Expand'}
+                </button>
+              )}
+            </div>
+            {entry.isExpanded && (
+              <>
+                  <label className="block text-gray-700 mb-2">Institution:
+                    <input type="text"
+                      value={entry.institution}
+                      className="border border-gray-300 rounded p-2 mb-2 w-full text-black"
+                      onChange={(e) => handleEditEducationField(index, 'institution', e.target.value)} />
+                  </label>
+                  <label className="block text-gray-700 mb-2">
+                    Course:
+                    <input type="text"
+                      value={entry.course}
+                      className="border border-gray-300 rounded p-2 mb-2 w-full text-black"
+                      onChange={(e) => handleEditEducationField(index, 'course', e.target.value)} />
+                  </label>
+                  <label className="block text-gray-700 mb-2">
+                    Start Date:
+                    <input type="date"
+                      defaultValue={entry.startDate}
+                      min={minDate}
+                      max={currentDate}
+                      className="border border-gray-300 rounded p-2 w-full text-black"
+                      onChange={(e) => handleEditEducationField(index, 'startDate', e.target.value)} />
+                  </label>
+                  <label className="block text-gray-700 mb-2">
+                    End Date:
+                    <input type="date"
+                      defaultValue={entry.endDate}
+                      min={minDate}
+                      max={currentDate}
+                      className="border border-gray-300 rounded p-2 w-full text-black"
+                      onChange={(e) => handleEditEducationField(index, 'endDate', e.target.value)} />
+                  </label>
+                  <button className="bg-green-500 text-white rounded px-4 py-2" onClick={() => handleSaveEducationHistory(index)}>Save</button>
+                  <button className="bg-red-500 text-white rounded px-4 py-2 ml-2" onClick={() => handleRemoveEducationHistoryFields(index)}>Remove</button>
+              </>
             )}
           </div>
         ))}
-        <button onClick={handleAddEducationHistory}>Add Education History</button>
+        {educationHistory.every(entry => entry.isSaved) && (
+        <button className="bg-blue-500 text-white rounded px-4 py-2" onClick={handleAddEducationHistory}>
+          Add
+        </button>
+        )}
       </div>
       <div className="mb-4">
         <label className="block text-gray-700 font-bold mb-2">Skills:</label>
