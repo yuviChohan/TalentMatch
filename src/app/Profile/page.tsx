@@ -9,7 +9,7 @@ const Profile: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-6 bg-gradient-to-r from-blue-200 to-green-200">
+    <main className="flex min-h-screen flex-col items-center justify-center p-6 bg-gradient-to-tr from-blue-400 via-blue-100 to-blue-400">
       <div className="w-full max-w-6xl bg-white shadow-xl rounded-xl p-10">
         <h1 className="text-5xl font-extrabold text-gray-800 mb-8">Profile</h1>
         <div className="flex justify-between items-center mb-8">

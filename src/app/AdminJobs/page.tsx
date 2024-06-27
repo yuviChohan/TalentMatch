@@ -1,17 +1,15 @@
-// src/app/AdminJobs/page.tsx
 "use client";
 import React, { useState, useEffect } from 'react';
 import JobCard from '../components/JobCard';
 import ResumeList from '../components/ResumeList';
+import Link from 'next/link';
 
 const AdminJobs: React.FC = () => {
   const [selectedJob, setSelectedJob] = useState<any>(null);
   const [jobTitle, setJobTitle] = useState<string>('');
   const [location, setLocation] = useState<string>('');
-  const [jobType, setJobType] = useState<string>('');
   const [jobs, setJobs] = useState<any[]>([]);
   const [filteredJobs, setFilteredJobs] = useState<any[]>([]);
-  const [sortOrder, setSortOrder] = useState<string>('lowToHigh');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [jobsPerPage] = useState<number>(5);
   const [loading, setLoading] = useState<boolean>(false);
@@ -20,7 +18,7 @@ const AdminJobs: React.FC = () => {
 
   const jobList = [
     {
-    title: 'QA Technician',
+      title: 'QA Technician',
       location: 'Calgary, Alberta',
       salary: 'From $21 an hour',
       type: 'Full-time',
@@ -73,22 +71,11 @@ const AdminJobs: React.FC = () => {
     const filtered = jobList.filter(job => {
       return (
         job.title.toLowerCase().includes(jobTitle.toLowerCase()) &&
-        job.location.toLowerCase().includes(location.toLowerCase()) &&
-        (jobType === '' || job.type === jobType)
+        job.location.toLowerCase().includes(location.toLowerCase())
       );
     });
     setFilteredJobs(filtered);
     setCurrentPage(1);
-  };
-
-  const sortBySalary = (order: string) => {
-    const sorted = [...filteredJobs].sort((a, b) => {
-      const salaryA = parseFloat(a.salary.split('$')[1]);
-      const salaryB = parseFloat(b.salary.split('$')[1]);
-      return order === 'lowToHigh' ? salaryA - salaryB : salaryB - salaryA;
-    });
-    setFilteredJobs(sorted);
-    setSortOrder(order);
   };
 
   const handleJobClick = async (job: any) => {
@@ -109,14 +96,6 @@ const AdminJobs: React.FC = () => {
     }
   };
 
-  const clearFilters = () => {
-    setJobTitle('');
-    setLocation('');
-    setJobType('');
-    setFilteredJobs(jobList);
-    setCurrentPage(1);
-  };
-
   const indexOfLastJob = currentPage * jobsPerPage;
   const indexOfFirstJob = indexOfLastJob - jobsPerPage;
   const currentJobs = filteredJobs.slice(indexOfFirstJob, indexOfLastJob);
@@ -126,7 +105,14 @@ const AdminJobs: React.FC = () => {
   return (
     <main className="flex flex-col items-center p-6 bg-gray-100 min-h-screen">
       <div className="w-full max-w-6xl bg-white shadow-md rounded-lg p-8">
-        <h1 className="text-2xl font-bold mb-4 text-gray-800">Job Listings</h1>
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-4xl font-bold text-gray-800">Job Listings</h1>
+          <Link href="/PostJobs">
+            <span className="bg-gradient-to-tr from-blue-400 via-blue-200 to-blue-500 text-black text-2xl font-bold rounded px-6 py-3 cursor-pointer w-1/3 text-center">
+              Add New Job Postings 
+            </span>
+          </Link>
+        </div>
 
         <div className="flex flex-wrap justify-between items-center mb-6 space-y-4 md:space-y-0">
           <input
@@ -145,33 +131,12 @@ const AdminJobs: React.FC = () => {
             <option value="">Select Location</option>
             {/* Add location options here */}
           </select>
-          <select
-            className="border border-gray-300 rounded p-2 text-gray-700 flex-grow"
-            value={jobType}
-            onChange={(e) => setJobType(e.target.value)}
-          >
-            <option value="">Select Type</option>
-            {/* Add job type options here */}
-          </select>
           <button
             onClick={handleSearch}
             className="bg-blue-500 text-white rounded px-4 py-2 ml-2"
           >
             Search
           </button>
-          <button
-            onClick={clearFilters}
-            className="bg-gray-500 text-white rounded px-4 py-2 ml-2"
-          >
-            Clear
-          </button>
-          <select
-            onChange={(e) => sortBySalary(e.target.value)}
-            className="bg-blue-500 text-white rounded px-4 py-2 ml-2"
-          >
-            <option value="lowToHigh">Sort by Salary: Low to High</option>
-            <option value="highToLow">Sort by Salary: High to Low</option>
-          </select>
         </div>
 
         {loading ? (
