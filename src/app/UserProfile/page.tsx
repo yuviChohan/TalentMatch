@@ -78,9 +78,9 @@ const UserProfile: React.FC = () => {
       const newWorkHistory = result.experience.map((exp: any) => ({
         company: exp.company_name,
         role: exp.title,
-        startDate: `${exp.start_date.year}-${String(exp.start_date.month).padStart(2, '0')}-${String(exp.start_date.day).padStart(2, '0')}`,
-        endDate: exp.end_date ? `${exp.end_date.year}-${String(exp.end_date.month).padStart(2, '0')}-${String(exp.end_date.day).padStart(2, '0')}` : '',
-        currentlyWorking: !exp.end_date,
+        startDate: exp.start_date.year ? `${exp.start_date.year}-${String(Math.max(1, exp.start_date.month)).padStart(2, '0')}-${String(Math.max(1, exp.start_date.day)).padStart(2, '0')}` : '',
+        endDate: exp.end_date.year ? `${exp.end_date.year}-${String(Math.max(1, exp.end_date.month)).padStart(2, '0')}-${String(Math.max(1, exp.end_date.day)).padStart(2, '0')}` : '',
+        currentlyWorking: !exp.end_date.year,
         isSaved: true,
         isExpanded: false,
         description: exp.description || '',
@@ -90,8 +90,8 @@ const UserProfile: React.FC = () => {
       const newEducationHistory = result.education.map((edu: any) => ({
         institution: edu.institution,
         course: edu.course_name,
-        startDate: `${edu.start_date.year}-${String(edu.start_date.month).padStart(2, '0')}-${String(edu.start_date.day).padStart(2, '0')}`,
-        endDate: `${edu.end_date.year}-${String(edu.end_date.month).padStart(2, '0')}-${String(edu.end_date.day).padStart(2, '0')}`,
+        startDate: edu.start_date.year ? `${edu.start_date.year}-${String(Math.max(1, edu.start_date.month)).padStart(2, '0')}-${String(Math.max(1, edu.start_date.day)).padStart(2, '0')}` : '',
+        endDate: edu.end_date.year ? `${edu.end_date.year}-${String(Math.max(1, edu.end_date.month)).padStart(2, '0')}-${String(Math.max(1, edu.end_date.day)).padStart(2, '0')}` : '',
         isSaved: true,
         isExpanded: false,
       }));
@@ -249,7 +249,7 @@ const UserProfile: React.FC = () => {
       experience: formattedExperience,
       education: formattedEducation,
     };
-  
+    
     try {
       const response = await fetch(`https://resumegraderapi.onrender.com/resumes/${uid}`, {
         method: 'PUT',
@@ -269,7 +269,7 @@ const UserProfile: React.FC = () => {
       console.error('Error saving profile:', error);
       alert('Failed to save profile.');
     }
-  
+    console.log('Payload:', payload);
     console.log('First Name:', firstName);
     console.log('Last Name:', lastName);
     console.log('Email:', email);
@@ -349,7 +349,7 @@ const UserProfile: React.FC = () => {
               <span className="text-md text-gray-700">{item.company}</span>
               )}
               {item.isSaved && (
-                <button className="text-blue-500" onClick={() => handleToggleExpandWorkHistory(index)}>
+                <button className="text-blue-500 absolute top-4 right-4" onClick={() => handleToggleExpandWorkHistory(index)}>
                   {item.isExpanded ? 'Collapse' : 'Expand'}
                 </button>
               )}
@@ -377,7 +377,7 @@ const UserProfile: React.FC = () => {
                   <input
                     type="date"
                     className="border border-gray-300 rounded p-2 w-full text-black"
-                    defaultValue={item.startDate}
+                    value={item.startDate}
                     max={currentDate}
                     min={minDate}
                     onChange={(e) => handleEditWorkHistoryField(index, 'startDate', e.target.value)}
@@ -389,7 +389,7 @@ const UserProfile: React.FC = () => {
                     <input
                       type="date"
                       className="border border-gray-300 rounded p-2 w-full text-black"
-                      defaultValue={item.endDate}
+                      value={item.endDate}
                       max={currentDate}
                       min={item.startDate}
                       onChange={(e) => handleEditWorkHistoryField(index, 'endDate', e.target.value)}
@@ -444,7 +444,7 @@ const UserProfile: React.FC = () => {
                 <span className="text-md text-gray-700">{entry.institution}</span>
               )}
               {entry.isSaved && (
-                <button className="text-blue-500" onClick={() => handleToggleExpandEducationHistory(index)}>
+                <button className="text-blue-500 absolute top-4 right-4" onClick={() => handleToggleExpandEducationHistory(index)}>
                   {entry.isExpanded ? 'Collapse' : 'Expand'}
                 </button>
               )}
@@ -467,7 +467,7 @@ const UserProfile: React.FC = () => {
                   <label className="block text-gray-700 mb-2">
                     Start Date:
                     <input type="date"
-                      defaultValue={entry.startDate}
+                      value={entry.startDate}
                       min={minDate}
                       max={currentDate}
                       className="border border-gray-300 rounded p-2 w-full text-black"
@@ -476,7 +476,7 @@ const UserProfile: React.FC = () => {
                   <label className="block text-gray-700 mb-2">
                     End Date:
                     <input type="date"
-                      defaultValue={entry.endDate}
+                      value={entry.endDate}
                       min={minDate}
                       max={currentDate}
                       className="border border-gray-300 rounded p-2 w-full text-black"
