@@ -425,7 +425,7 @@ const UserProfile: React.FC = () => {
                   className="bg-red-500 text-white rounded px-4 py-2 ml-2"
                   onClick={() => handleRemoveWorkHistoryFields(index)}
                 >
-                  Clear
+                  Remove
                 </button>
               </>
             )}
