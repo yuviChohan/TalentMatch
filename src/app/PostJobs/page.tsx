@@ -63,19 +63,19 @@ const PostJob: React.FC = () => {
   };
 
   return (
-    <main className="flex flex-col items-center p-6 bg-gradient-to-r from-blue-200 via-blue-100 to-blue-400 min-h-screen">
+    <main className="flex flex-col items-center p-6 bg-gradient-to-r from-indigo-300 via-purple-200 to-pink-300 min-h-screen">
       <div className="w-full max-w-2xl bg-white shadow-lg rounded-lg p-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">Post a New Job</h1>
+          <h1 className="text-4xl font-bold text-gray-800">Post a New Job</h1>
           <Link href="/Jobs">
-            <span className="bg-gray-500 text-white rounded px-4 py-2 cursor-pointer hover:bg-gray-600 transition-colors">
+            <span className="bg-indigo-500 text-white rounded px-4 py-2 cursor-pointer hover:bg-indigo-600 transition-colors">
               Back to Jobs
             </span>
           </Link>
         </div>
         <form onSubmit={handleSubmit}>
           <div className="mb-6">
-            <label className="block text-gray-700 mb-2">Job Title</label>
+            <label className="block text-gray-700 font-semibold mb-2">Job Title</label>
             <input
               type="text"
               className="border border-gray-300 rounded p-3 w-full text-gray-800"
@@ -85,7 +85,7 @@ const PostJob: React.FC = () => {
             />
           </div>
           <div className="mb-6">
-            <label className="block text-gray-700 mb-2">Company</label>
+            <label className="block text-gray-700 font-semibold mb-2">Company</label>
             <input
               type="text"
               className="border border-gray-300 rounded p-3 w-full text-gray-800"
@@ -95,7 +95,7 @@ const PostJob: React.FC = () => {
             />
           </div>
           <div className="mb-6">
-            <label className="block text-gray-700 mb-2">Description</label>
+            <label className="block text-gray-700 font-semibold mb-2">Description</label>
             <textarea
               className="border border-gray-300 rounded p-3 w-full text-gray-800"
               value={description}
@@ -105,7 +105,7 @@ const PostJob: React.FC = () => {
             ></textarea>
           </div>
           <div className="mb-6">
-            <label className="block text-gray-700 mb-2">Required Skills (comma separated)</label>
+            <label className="block text-gray-700 font-semibold mb-2">Required Skills (comma separated)</label>
             <input
               type="text"
               className="border border-gray-300 rounded p-3 w-full text-gray-800"
@@ -115,7 +115,7 @@ const PostJob: React.FC = () => {
             />
           </div>
           <div className="mb-6">
-            <label className="block text-gray-700 mb-2">Application Deadline</label>
+            <label className="block text-gray-700 font-semibold mb-2">Application Deadline</label>
             <input
               type="date"
               className="border border-gray-300 rounded p-3 w-full text-gray-800"
@@ -125,7 +125,7 @@ const PostJob: React.FC = () => {
             />
           </div>
           <div className="mb-6">
-            <label className="block text-gray-700 mb-2">Location</label>
+            <label className="block text-gray-700 font-semibold mb-2">Location</label>
             <input
               type="text"
               className="border border-gray-300 rounded p-3 w-full text-gray-800"
@@ -135,7 +135,7 @@ const PostJob: React.FC = () => {
             />
           </div>
           <div className="mb-6">
-            <label className="block text-gray-700 mb-2">Salary</label>
+            <label className="block text-gray-700 font-semibold mb-2">Salary</label>
             <input
               type="number"
               className="border border-gray-300 rounded p-3 w-full text-gray-800"
@@ -146,7 +146,7 @@ const PostJob: React.FC = () => {
             />
           </div>
           <div className="mb-6">
-            <label className="block text-gray-700 mb-2">Job Type</label>
+            <label className="block text-gray-700 font-semibold mb-2">Job Type</label>
             <select
               className="border border-gray-300 rounded p-3 w-full text-gray-800"
               value={jobType}
@@ -158,8 +158,8 @@ const PostJob: React.FC = () => {
               <option value="Unknown">Unknown</option>
             </select>
           </div>
-          <div className="mb-6">
-            <label className="block text-gray-700 mb-2">Active</label>
+          <div className="mb-6 flex items-center">
+            <label className="block text-gray-700 font-semibold mb-2 mr-4">Active</label>
             <input
               type="checkbox"
               className="border border-gray-300 rounded p-3"
