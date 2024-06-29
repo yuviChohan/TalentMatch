@@ -32,49 +32,45 @@ const AuthContext = createContext<AuthContextProps>({
   signOut: async () => {},
 });
 
+const fetchUserInfo = async (uid: string, setRole: React.Dispatch<React.SetStateAction<string | null>>, setUser: React.Dispatch<React.SetStateAction<AuthContextProps['user'] | null>>) => {
+  try {
+    const response = await fetch(`https://resumegraderapi.onrender.com/users/${uid}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch user info');
+    }
+    const data = await response.json();
+    setUser(data);
+    await fetchUserRole(uid, setRole); // Fetch user role after fetching user info
+    console.log('User info:', data); // For testing purposes
+  } catch (error) {
+    console.error('Error fetching user info:', error);
+  }
+};
+
+const fetchUserRole = async (uid: string, setRole: React.Dispatch<React.SetStateAction<string | null>>) => {
+  try {
+    const response = await fetch(`https://resumegraderapi.onrender.com/users/privileges/${uid}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch user role');
+    }
+    const data = await response.text();
+    setRole(data);
+    console.log('User role:', data); // For testing purposes
+  } catch (error) {
+    console.error('Error fetching user role:', error);
+  }
+};
+
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [uid, setUid] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [user, setUser] = useState<AuthContextProps['user']>(null);
 
   useEffect(() => {
-    const fetchUserInfo = async (uid: string) => {
-      try {
-        const response = await fetch(`https://resumegraderapi.onrender.com/users/${uid}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch user info');
-        }
-        const data = await response.json();
-        setUser(data);
-        await fetchUserRole(uid); // Fetch user role after fetching user info
-      } catch (error) {
-        console.error('Error fetching user info:', error);
-      }
-    };
-
-    const fetchUserRole = async (uid: string) => {
-      try {
-        const response = await fetch(`https://resumegraderapi.onrender.com/privileges/${uid}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch user role');
-        }
-        const data = await response.json();
-        if (data.is_admin) {
-          setRole('admin');
-        } else if (data.is_owner) {
-          setRole('owner');
-        } else {
-          setRole('user');
-        }
-      } catch (error) {
-        console.error('Error fetching user role:', error);
-      }
-    };
-
     const unsubscribe = onAuthStateChanged(auth, (currentUser: User | null) => {
       if (currentUser) {
         setUid(currentUser.uid);
-        fetchUserInfo(currentUser.uid);
+        fetchUserInfo(currentUser.uid, setRole, setUser);
       } else {
         setUid(null);
         setUser(null);
