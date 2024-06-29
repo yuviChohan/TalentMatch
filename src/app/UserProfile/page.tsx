@@ -292,13 +292,13 @@ const UserProfile: React.FC = () => {
 
   return (
     <div className="w-full max-w-4xl bg-white shadow-xl rounded-xl p-10">
-      { <div className="flex justify-between items-center mb-4">
+     <div className="flex justify-between items-center mb-4">
         <Link href="/YourApplication">
         <button className="bg-gray-500 text-white rounded px-4 py-2">
           Your Applications
         </button>
         </Link>
-      </div> }
+      </div>
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
           <label className="block text-gray-700 font-bold mb-2">First Name:</label>
