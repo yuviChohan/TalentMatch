@@ -26,6 +26,8 @@ interface EducationEntry {
 const UserProfile: React.FC = () => {
   const [firstName, setFirstName] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
+  const [phoneNumber, setPhoneNumber] = useState<string>('');
+  const [dateOfBirth, setDateOfBirth] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [resume, setResume] = useState<File | null>(null);
   const [workHistory, setWorkHistory] = useState<WorkHistoryEntry[]>([
@@ -39,20 +41,7 @@ const UserProfile: React.FC = () => {
 
   const currentDate = new Date().toISOString().split('T')[0];
   const minDate = new Date(new Date().setFullYear(new Date().getFullYear() - 50)).toISOString().split('T')[0];
-  const { uid } = useAuth();
-
-  // useEffect(() => {
-  //   setAppliedJobs([
-  //     { title: 'Software Engineer', company: 'Tech Solutions Inc.', status: 'Interview Scheduled' },
-  //     { title: 'QA Technician', company: 'Starfield Industry Ltd.', status: 'Applied' },
-  //     { title: 'Marketing Manager', company: 'Marketing Agency X', status: 'Rejected' },
-  //   ]);
-
-  //   if (!uid) {
-  //     alert('Please sign in to view your profile.');
-
-  //   }
-  // }, [uid]);
+  const { uid, user } = useAuth();
 
   const uploadResume = async (file: File) => {
     const formData = new FormData();
@@ -288,7 +277,18 @@ const UserProfile: React.FC = () => {
         setWorkHistory(newWorkHistory);
       }
     }
-  }, [workHistory, educationHistory]);
+    // Check if user is signed in and user data is available
+    if (uid && user) {
+    // Set the state for each field if the user data exists
+    setFirstName(user.name.first_name || '');
+    setLastName(user.name.last_name || '');
+    setEmail(user.email || '');
+    setPhoneNumber(user.phone_number || ''); // Assuming these fields exist on your user object
+    // Format the date of birth as a string
+    const dobString = `${user.dob.year}-${String(user.dob.month).padStart(2, '0')}-${String(user.dob.day).padStart(2, '0')}`;
+    setDateOfBirth(dobString);
+    }
+  }, [workHistory, educationHistory, uid, user]); // Include uid and user in the dependency array
 
   return (
     <div className="w-full max-w-4xl bg-white shadow-xl rounded-xl p-10">
@@ -315,6 +315,24 @@ const UserProfile: React.FC = () => {
             type="text"
             className="border border-gray-300 rounded p-2 w-full text-black"
             value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+          />
+        </div>
+        <div>
+          <label className="block text-gray-700 font-bold mb-2">Phone Number:</label>
+          <input
+            type="text"
+            className="border border-gray-300 rounded p-2 w-full text-black"
+            value={phoneNumber}
+            onChange={(e) => setLastName(e.target.value)}
+          />
+        </div>
+        <div>
+          <label className="block text-gray-700 font-bold mb-2">Date of Birth:</label>
+          <input
+            type="text"
+            className="border border-gray-300 rounded p-2 w-full text-black"
+            value={dateOfBirth}
             onChange={(e) => setLastName(e.target.value)}
           />
         </div>
@@ -425,7 +443,7 @@ const UserProfile: React.FC = () => {
                   className="bg-red-500 text-white rounded px-4 py-2 ml-2"
                   onClick={() => handleRemoveWorkHistoryFields(index)}
                 >
-                  Clear
+                  Remove
                 </button>
               </>
             )}

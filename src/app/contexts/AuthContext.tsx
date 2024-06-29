@@ -6,33 +6,66 @@ import { auth } from '../firebase';
 interface AuthContextProps {
   uid: string | null;
   role: string | null;
-  setRole: (role: string) => void;
-  user: User | null;
+  user: {
+    uid: string;
+    name: {
+      first_name: string;
+      last_name: string;
+    };
+    dob: {
+      day: number;
+      month: number;
+      year: number;
+    };
+    is_owner: boolean;
+    is_admin: boolean;
+    phone_number: string;
+    email: string;
+  } | null;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextProps>({
   uid: null,
-  role: null,
-  setRole: () => {},
   user: null,
+  role: null,
   signOut: async () => {},
 });
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [uid, setUid] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthContextProps['user']>(null);
 
   useEffect(() => {
+    const fetchUserInfo = async (uid: string) => {
+      try {
+        const response = await fetch(`https://resumegraderapi.onrender.com/users/${uid}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch user info');
+        }
+        const data = await response.json();
+        setUser(data);
+        await fetchUserRole(uid); // Fetch user role after fetching user info
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+      }
+    };
+
     const fetchUserRole = async (uid: string) => {
       try {
-        const response = await fetch(`https://your-api-url.com/users/${uid}/role`);
+        const response = await fetch(`https://resumegraderapi.onrender.com/privileges/${uid}`);
         if (!response.ok) {
           throw new Error('Failed to fetch user role');
         }
         const data = await response.json();
-        setRole(data.role);
+        if (data.is_admin) {
+          setRole('admin');
+        } else if (data.is_owner) {
+          setRole('owner');
+        } else {
+          setRole('user');
+        }
       } catch (error) {
         console.error('Error fetching user role:', error);
       }
@@ -41,12 +74,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const unsubscribe = onAuthStateChanged(auth, (currentUser: User | null) => {
       if (currentUser) {
         setUid(currentUser.uid);
-        setUser(currentUser);
-        fetchUserRole(currentUser.uid);
+        fetchUserInfo(currentUser.uid);
       } else {
         setUid(null);
-        setRole(null);
         setUser(null);
+        setRole(null);
       }
     });
 
@@ -56,12 +88,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const signOut = async () => {
     await firebaseSignOut(auth);
     setUid(null);
-    setRole(null);
     setUser(null);
+    setRole(null);
   };
 
   return (
-    <AuthContext.Provider value={{ uid, role, setRole, user, signOut }}>
+    <AuthContext.Provider value={{ uid, user, role, signOut }}>
       {children}
     </AuthContext.Provider>
   );
