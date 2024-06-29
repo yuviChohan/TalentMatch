@@ -1,7 +1,7 @@
 "use client";
+
 import React, { useState, useEffect } from 'react';
 import JobCard from '../components/JobCard';
-import ResumeList from '../components/ResumeList';
 import Link from 'next/link';
 
 const AdminJobs: React.FC = () => {
@@ -15,49 +15,22 @@ const AdminJobs: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [resumes, setResumes] = useState<any[]>([]);
-
-  const jobList = [
-    {
-      title: 'QA Technician',
-      location: 'Calgary, Alberta',
-      salary: 'From $21 an hour',
-      type: 'Full-time',
-      description: 'Starfield Industry Ltd. (The Starfield Group) - Performs in-house calibration of inspection and monitoring equipment, such as thermometers, scales, etc. Competitive pay and benefits. Positive and fun work environment.',
-      details: 'Starfield Industry Ltd. (The Starfield Group) - Wage: $21/hour. Status: Full-time, Permanent. Hours/Shifts: 40 hours per week, 5 days per week on a shiftwork basis with 2 days off per week (may not be consecutive days). Must be available to work all 3 shifts - 5am-1:30pm, 9am-5:30pm, 2:30pm-11:00pm. Performs pre-operational inspection in accordance with food safety requirements, conducts CCP verifications, incoming material inspections, and in-process product inspections and finished product quality inspections. Ensures timely and accurate documentation and records keeping is performed.'
-    },
-    {
-      title: 'Software Engineer',
-      location: 'Vancouver, British Columbia',
-      salary: 'From $40 an hour',
-      type: 'Full-time',
-      description: 'Tech Solutions Inc. - Develop and maintain software applications. Competitive pay and benefits. Positive and fun work environment.',
-      details: 'Tech Solutions Inc. - Wage: $40/hour. Status: Full-time, Permanent. Responsibilities: Develop and maintain software applications, collaborate with cross-functional teams, perform code reviews, and ensure high-quality code. Requirements: Bachelor\'s degree in Computer Science or related field, proficiency in JavaScript and Python, experience with React and Node.js, and excellent problem-solving skills.'
-    },
-    {
-      title: 'Marketing Manager',
-      location: 'Toronto, Ontario',
-      salary: 'From $50 an hour',
-      type: 'Full-time',
-      description: 'Marketing Agency X - Lead marketing campaigns and strategies. Competitive pay and benefits. Collaborative work environment.',
-      details: 'Marketing Agency X - Wage: $50/hour. Status: Full-time, Permanent. Responsibilities: Lead and manage marketing campaigns, develop marketing strategies, analyze market trends, and collaborate with the sales team. Requirements: Bachelor\'s degree in Marketing or related field, proven experience in marketing management, strong analytical skills, and excellent communication skills.'
-    },
-    {
-      title: 'Graphic Designer',
-      location: 'Montreal, Quebec',
-      salary: 'From $25 an hour',
-      type: 'Part-time',
-      description: 'Creative Studio Y - Design visual content for various projects. Flexible schedule. Creative and dynamic team.',
-      details: 'Creative Studio Y - Wage: $25/hour. Status: Part-time. Responsibilities: Design visual content for websites, social media, and print materials, collaborate with the creative team, and ensure brand consistency. Requirements: Bachelor\'s degree in Graphic Design or related field, proficiency in Adobe Creative Suite, strong portfolio, and excellent attention to detail.'
-    },
-  ];
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [editJob, setEditJob] = useState<any>(null);
+  const [applicants, setApplicants] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchJobs = async () => {
       setLoading(true);
       setError(null);
       try {
-        setJobs(jobList);
-        setFilteredJobs(jobList);
+        const response = await fetch('https://resumegraderapi.onrender.com/jobs/');
+        if (!response.ok) {
+          throw new Error('Failed to fetch jobs');
+        }
+        const data = await response.json();
+        setJobs(data);
+        setFilteredJobs(data);
       } catch (error) {
         setError('Error fetching jobs. Please try again later.');
       } finally {
@@ -67,8 +40,13 @@ const AdminJobs: React.FC = () => {
     fetchJobs();
   }, []);
 
+  const formatDate = (dateObject: { day: number, month: number, year: number }) => {
+    const { day, month, year } = dateObject;
+    return `${day.toString().padStart(2, '0')}-${month.toString().padStart(2, '0')}-${year}`;
+  };
+
   const handleSearch = () => {
-    const filtered = jobList.filter(job => {
+    const filtered = jobs.filter(job => {
       return (
         job.title.toLowerCase().includes(jobTitle.toLowerCase()) &&
         job.location.toLowerCase().includes(location.toLowerCase())
@@ -81,12 +59,20 @@ const AdminJobs: React.FC = () => {
   const handleJobClick = async (job: any) => {
     setSelectedJob(job);
     try {
-      // Fetch resumes for the selected job (assuming an API endpoint)
-      const response = await fetch(`https://your-api-url.com/jobs/${job.id}/resumes`);
+      const response = await fetch(`https://resumegraderapi.onrender.com/jobs/${job.id}/resumes`);
       const data = await response.json();
       setResumes(data.resumes);
     } catch (error) {
       console.error('Error fetching resumes:', error);
+    }
+
+    try {
+      const response = await fetch(`https://resumegraderapi.onrender.com/jobs/${job.id}/applicants`);
+      const data = await response.json();
+      setApplicants(data.applicants || []);
+    } catch (error) {
+      console.error('Error fetching applicants:', error);
+      setApplicants([]);
     }
   };
 
@@ -101,6 +87,165 @@ const AdminJobs: React.FC = () => {
   const currentJobs = filteredJobs.slice(indexOfFirstJob, indexOfLastJob);
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
+  const handleDelete = async (jobId: number) => {
+    if (confirm('Are you sure you want to delete this job?')) {
+      try {
+        await fetch(`https://resumegraderapi.onrender.com/jobs/${jobId}`, {
+          method: 'DELETE',
+        });
+        setJobs(jobs.filter(job => job.id !== jobId));
+        setFilteredJobs(filteredJobs.filter(job => job.id !== jobId));
+        alert('Job deleted successfully');
+      } catch (error) {
+        console.error('Error deleting job:', error);
+        alert('Failed to delete job');
+      }
+    }
+  };
+
+  const handleEdit = (job: any) => {
+    setIsEditing(true);
+    setEditJob(job);
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`https://resumegraderapi.onrender.com/jobs/${editJob.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(editJob)
+      });
+
+      if (response.ok) {
+        setJobs(jobs.map(job => (job.id === editJob.id ? editJob : job)));
+        setFilteredJobs(filteredJobs.map(job => (job.id === editJob.id ? editJob : job)));
+        setIsEditing(false);
+        alert('Job updated successfully');
+      } else {
+        alert('Failed to update job');
+      }
+    } catch (error) {
+      console.error('Error updating job:', error);
+      alert('Failed to update job');
+    }
+  };
+
+  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setEditJob({ ...editJob, [name]: value });
+  };
+
+  if (isEditing) {
+    return (
+      <main className="flex flex-col items-center bg-white shadow-lg rounded-lg p-8 min-h-screen">
+        <div className="w-full max-w-6xl bg-white shadow-lg rounded-lg p-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-4">Edit Job</h1>
+          <form onSubmit={handleEditSubmit}>
+            <div className="mb-6">
+              <label className="block text-gray-700 mb-2">Job Title</label>
+              <input
+                type="text"
+                name="title"
+                className="border border-gray-300 rounded p-3 w-full text-gray-800"
+                value={editJob.title}
+                onChange={handleEditChange}
+                required
+              />
+            </div>
+            <div className="mb-6">
+              <label className="block text-gray-700 mb-2">Company</label>
+              <input
+                type="text"
+                name="company"
+                className="border border-gray-300 rounded p-3 w-full text-gray-800"
+                value={editJob.company}
+                onChange={handleEditChange}
+                required
+              />
+            </div>
+            <div className="mb-6">
+              <label className="block text-gray-700 mb-2">Description</label>
+              <textarea
+                name="description"
+                className="border border-gray-300 rounded p-3 w-full text-gray-800"
+                value={editJob.description}
+                onChange={handleEditChange}
+                required
+                rows={5}
+              ></textarea>
+            </div>
+            <div className="mb-6">
+              <label className="block text-gray-700 mb-2">Required Skills (comma separated)</label>
+              <input
+                type="text"
+                name="required_skills"
+                className="border border-gray-300 rounded p-3 w-full text-gray-800"
+                value={editJob.required_skills}
+                onChange={handleEditChange}
+                required
+              />
+            </div>
+            <div className="mb-6">
+              <label className="block text-gray-700 mb-2">Application Deadline</label>
+              <input
+                type="date"
+                name="application_deadline"
+                className="border border-gray-300 rounded p-3 w-full text-gray-800"
+                value={editJob.application_deadline}
+                onChange={handleEditChange}
+                required
+              />
+            </div>
+            <div className="mb-6">
+              <label className="block text-gray-700 mb-2">Location</label>
+              <input
+                type="text"
+                name="location"
+                className="border border-gray-300 rounded p-3 w-full text-gray-800"
+                value={editJob.location}
+                onChange={handleEditChange}
+                required
+              />
+            </div>
+            <div className="mb-6">
+              <label className="block text-gray-700 mb-2">Salary</label>
+              <input
+                type="number"
+                name="salary"
+                className="border border-gray-300 rounded p-3 w-full text-gray-800"
+                value={editJob.salary}
+                onChange={handleEditChange}
+                required
+              />
+            </div>
+            <div className="mb-6">
+              <label className="block text-gray-700 mb-2">Job Type</label>
+              <select
+                name="job_type"
+                className="border border-gray-300 rounded p-3 w-full text-gray-800"
+                value={editJob.job_type}
+                onChange={handleEditChange}
+              >
+                <option value="FULL">Full-time</option>
+                <option value="PART">Part-time</option>
+                <option value="CONTRACT">Contract</option>
+              </select>
+            </div>
+            <button
+              type="submit"
+              className="w-full bg-gradient-to-r from-green-400 via-green-500 to-green-600 text-white rounded p-4 text-xl font-bold hover:bg-green-700 transition-colors"
+            >
+              Save Job
+            </button>
+          </form>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="flex flex-col items-center p-6 bg-gray-100 min-h-screen">
@@ -129,7 +274,6 @@ const AdminJobs: React.FC = () => {
             onChange={(e) => setLocation(e.target.value)}
           >
             <option value="">Select Location</option>
-            {/* Add location options here */}
           </select>
           <button
             onClick={handleSearch}
@@ -153,10 +297,13 @@ const AdminJobs: React.FC = () => {
                   <div key={index} className="mb-4" onClick={() => handleJobClick(job)}>
                     <JobCard
                       title={job.title}
+                      company={job.company}
                       location={job.location}
                       salary={job.salary}
-                      type={job.type}
+                      job_type={job.job_type}
                       description={`${job.description.substring(0, 100)}...`}
+                      onEdit={() => handleEdit(job)}
+                      onDelete={() => handleDelete(job.id)}
                     />
                   </div>
                 ))
@@ -181,16 +328,38 @@ const AdminJobs: React.FC = () => {
                 <div className="bg-white p-6 rounded shadow-md">
                   <h2 className="text-xl font-bold mb-2 text-gray-800">{selectedJob.title}</h2>
                   <p className="text-gray-700 mb-2">
+                    <strong>Company:</strong> {selectedJob.company}
+                  </p>
+                  <p className="text-gray-700 mb-2">
                     <strong>Location:</strong> {selectedJob.location}
                   </p>
                   <p className="text-gray-700 mb-2">
                     <strong>Salary:</strong> {selectedJob.salary}
                   </p>
                   <p className="text-gray-700 mb-2">
-                    <strong>Type:</strong> {selectedJob.type}
+                    <strong>Type:</strong> {selectedJob.job_type ? selectedJob.job_type : 'N/A'}
                   </p>
-                  <p className="text-gray-700 mb-4">{selectedJob.details}</p>
-                  <ResumeList resumes={resumes} /> {/* Component to list resumes */}
+                  <p className="text-gray-700 mb-2">
+                    <strong>Required Skills:</strong> {selectedJob.required_skills.join(', ')}
+                  </p>
+                  <p className="text-gray-700 mb-2">
+                    <strong>Application Deadline:</strong> {formatDate(selectedJob.application_deadline)}
+                  </p>
+                  <p className="text-gray-700 mb-4">{selectedJob.details ? selectedJob.details : selectedJob.description}</p>
+                  <div className="mt-6">
+                    <h3 className="text-lg font-bold text-gray-800 mb-2">Applicants</h3>
+                    <ul>
+                      {applicants.length > 0 ? (
+                        applicants.map((applicant, index) => (
+                          <li key={index} className="text-gray-700 mb-1">
+                            {applicant.name} - {applicant.email}
+                          </li>
+                        ))
+                      ) : (
+                        <li className="text-gray-500">No applicants found.</li>
+                      )}
+                    </ul>
+                  </div>
                 </div>
               ) : (
                 <div className="text-center text-gray-500">Select a job to view details.</div>
