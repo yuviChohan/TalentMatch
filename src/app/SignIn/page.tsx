@@ -79,7 +79,7 @@ const SignIn: React.FC = () => {
   };
 
   const redirectToHome = () => {
-    window.location.href = "/Index";
+    window.location.href = "/Jobs";
   };
 
   const signInWithEmail = () => {
