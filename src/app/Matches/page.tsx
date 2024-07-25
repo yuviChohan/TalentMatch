@@ -3,6 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import JobCard from '../components/JobCard';
 
+interface MatchComponentProps {
+  match: { grade: string };
+  match_id: number;
+  auth_uid: string;
+}
+
 const MatchesPage: React.FC = () => {
   const [selectedJob, setSelectedJob] = useState<any>(null);
   const [jobTitle, setJobTitle] = useState<string>('');
@@ -19,6 +25,11 @@ const MatchesPage: React.FC = () => {
   const [appliedJobs, setAppliedJobs] = useState<any[]>([]);
   const { uid } = useAuth(); // Use useAuth to get uid
   const [matchDetails, setMatchDetails] = useState<any[]>([]);
+  const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
+  const [resumeDetails, setResumeDetails] = useState<any | null>(null);
+  const [showStatusList, setShowStatusList] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<any | null>(null);
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const uniqueLocations = jobs.map(job => job.location).filter((location, index, array) => array.indexOf(location) === index);
 
   useEffect(() => {
@@ -43,6 +54,122 @@ const MatchesPage: React.FC = () => {
     fetchJobs();
   }, [uid]);
 
+  const handleButtonClick = (matchId: any) => {
+    setSelectedMatchId(matchId === selectedMatchId ? null : matchId);
+    setSelectedOption(null);
+  };
+
+  const handleStatusSelect = (status : any, statusCode : any) => {
+    setSelectedStatus({ status, statusCode });
+    setShowStatusList(false);
+    setSelectedOption(status);
+  };
+
+  const handleSubmit = async () => {
+    if (selectedStatus) {
+      const data = {
+        match_id: selectedMatchId,
+        status: selectedStatus.status,
+        status_code: selectedStatus.statusCode,
+        auth_uid: uid
+      };
+
+      try {
+        const response = await fetch(`https://resumegraderapi.onrender.com/matches/${selectedMatchId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+          console.log('Status updated successfully');
+          fetchMatchDetails(selectedJob.job_id);
+          alert('Status updated successfully');
+        } else {
+          console.error('Failed to update status');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+  };
+
+  const connectWebSocket = () => {
+    if (!selectedJob) {
+      alert('Please select a job to grade.');
+      return;
+    }
+
+    const ws = new WebSocket(`https://resumegraderapi.onrender.com/grade/job/real-time/${selectedJob.job_id}?auth_uid=${uid}`);
+
+    ws.onmessage = (event) => {
+      console.log('WebSocket message received:', event.data);
+      updateMatchDetails(event.data);
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+    
+  };
+
+  const updateMatchDetails = (data: string) => {
+    const parsedData = JSON.parse(data);
+  
+    const updateDetails = (match: any) => {
+      setMatchDetails(prevDetails => 
+        prevDetails.map(detail => 
+          detail.match_id === match.match_id 
+            ? { ...detail, status: match.status, status_code: match.status_code, grade: match.grade } 
+            : detail
+        )
+      );
+    };
+  
+    if (Array.isArray(parsedData)) {
+      parsedData.forEach(updateDetails);
+    } else {
+      updateDetails(parsedData);
+    }
+  };
+
+  const handleMatchClick = async (matchId: string, match_uid: string) => {
+    setSelectedMatchId(matchId); // Store selected match's uid
+    try {
+      const response = await fetch(`https://resumegraderapi.onrender.com/resumes/${match_uid}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch resume details');
+      }
+      const data = await response.json();
+      setResumeDetails(data); // Store fetched resume details
+    } catch (error) {
+      console.error('Error fetching resume details:', error);
+    }
+  };
+  
+  const renderResumeDetails = () => {
+    if (!resumeDetails) return null; // Do not render if no resume details are available
+    return (
+      <div className="mt-2">
+        <h3 className="font-semibold">Resume Details:</h3>
+        <p>Skills: {resumeDetails.skills.join(', ')}</p>
+        <div className="mt-2">
+          <h2 className="font-semibold" >Experience:</h2>
+          {resumeDetails.experience.map((exp: any, index: number) => (
+            <div key={index}>
+              <p>Title: {exp.title}</p>
+              <p>Company: {exp.company_name}</p>
+              {/* Display other experience details */}
+            </div>
+          ))}
+        </div>
+        {/* Render education and other sections similarly */}
+      </div>
+    );
+  };
+
   const fetchMatchDetails = async (jobId: string) => {
     try {
       console.log('fetching match details for job:' + jobId); // For testing purposes
@@ -52,7 +179,14 @@ const MatchesPage: React.FC = () => {
       }
       const matchDetails = await response.json();
       console.log('Match details:', matchDetails); // For testing purposes
-      setMatchDetails(matchDetails);
+      // Sort match details by grade
+      const sortedMatchDetails = matchDetails.sort((a: any, b: any) => {
+        if (a.grade < b.grade) return 1;
+        if (a.grade > b.grade) return -1;
+        return 0;
+      });
+
+      setMatchDetails(sortedMatchDetails);
     } catch (error) {
       console.error('Error fetching match details:', error);
     }
@@ -210,21 +344,56 @@ const MatchesPage: React.FC = () => {
             <div className="w-3/5 p-4">
               {selectedJob ? (
               <div className="bg-white p-6 rounded shadow-md">
-                <h2 className="text-xl font-bold mb-2 text-gray-800">{selectedJob.title}</h2>
-                {/* Other job details */}
+                <h2 className="text-2xl font-bold mb-2 text-gray-800">{selectedJob.title}</h2>
+                <button
+                  onClick={connectWebSocket}
+                  className="float-right bg-blue-500 text-black rounded px-2 py-1 hover:bg-cyan-600 hover:text-white"
+                >
+                  Start Grading
+                </button>
                 {matchDetails && matchDetails.length > 0 ? (
                   <div className='mt-3'>
                     <h3 className="text-lg text-black font-bold mb-2">Match Details:</h3>
                     {matchDetails.map((match:any) => (
-                      <div key={match.match_id} className="mb-2 text-black border border-solid border-stone-100 shadow-md rounded-md p-2">
-                        <div className='float-right text-blue-700'>
-                          <p><strong>{match.grade}</strong></p>
+                      <div key={match.match_id} className={`mb-2 text-black border border-solid ${selectedMatchId === match.match_id ? 'border-2 border-blue-300 bg-blue-100' : 'border-stone-100 hover:bg-blue-200'} shadow-md rounded-md p-4`}>
+                        <div onClick={() => handleMatchClick(match.match_id, match.uid)} className='cursor-pointer'>
+                          <div className='float-right text-right text-blue-700 ml-2'>
+                            <p><strong>{match.grade}</strong></p>
+                            <button onClick={handleButtonClick}>Update Status</button>
+                            {selectedMatchId === match.match_id && (
+                              <div className="border border-solid border-blue-500 rounded-md my-1 ml-1 p-1">
+                                <ul className='text-black text-sm'>
+                                <li
+                                    onClick={() => handleStatusSelect('SHORTLISTED', 701)}
+                                    className={`cursor-pointer ${selectedOption === 'SHORTLISTED' ? 'font-bold text-blue-500' : ''}`}
+                                  >
+                                    SHORTLISTED
+                                  </li>
+                                  <li
+                                    onClick={() => handleStatusSelect('SELECTED', 710)}
+                                    className={`cursor-pointer ${selectedOption === 'SELECTED' ? 'font-bold text-blue-500' : ''}`}
+                                  >
+                                    SELECTED
+                                  </li>
+                                  <li
+                                    onClick={() => handleStatusSelect('CONTACTED', 720)}
+                                    className={`cursor-pointer ${selectedOption === 'CONTACTED' ? 'font-bold text-blue-500' : ''}`}
+                                  >
+                                    CONTACTED
+                                  </li>
+                                </ul>
+                                <button onClick={handleSubmit} className='mt-3 p-1 hover:bg-blue-500 hover:text-white rounded-md'>Submit</button>
+                              </div>
+                            )}
+                          </div>
+                          <p><strong>Match ID:</strong> {match.match_id}</p>
+                          <p><strong>Status:</strong> {match.status}</p>
+                          <p><strong>Applicant:</strong> {match.user.name.first_name} {match.user.name.last_name}</p>
                         </div>
-                        <p><strong>Match ID:</strong> {match.match_id}</p>
-                        <p><strong>Status:</strong> {match.status}</p>
-                        <p><strong>User:</strong> {match.user.name.first_name} {match.user.name.last_name}</p>
+                        {selectedMatchId === match.match_id && renderResumeDetails()}
                       </div>
                     ))}
+                    {/* {renderResumeDetails()} */}
                   </div>
                 ) : (
                   <p>No match details found.</p>
