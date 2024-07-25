@@ -31,7 +31,7 @@ const NavBar: React.FC<NavBarProps> = ({ links }) => {
     <>
       <nav className="flex justify-between items-center p-4 bg-white shadow-md">
         <div className="flex items-center">
-          <Link href="/Index">
+          <Link href="/RoleBasedHome">
             <img src="/logo.png" alt="Logo" className="h-12 w-55 cursor-pointer" />
           </Link>
         </div>
@@ -56,9 +56,6 @@ const NavBar: React.FC<NavBarProps> = ({ links }) => {
                   Sign Out
                 </span>
               </Link>
-              <button onClick={handleRoleSwitch} className="text-lg text-black bg-gray-200 p-2 rounded">
-            {role === 'admin' ? 'Switch to User' : 'Switch to Admin'}
-          </button>
               </>
           ) : (
             <>
@@ -67,9 +64,6 @@ const NavBar: React.FC<NavBarProps> = ({ links }) => {
                 Sign In
               </span>
             </Link>
-            <button onClick={handleRoleSwitch} className="text-lg text-black bg-gray-200 p-2 rounded">
-            {role === 'admin' ? 'Switch to User' : 'Switch to Admin'}
-          </button>
           </>
           )}
         </div>

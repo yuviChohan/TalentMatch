@@ -3,11 +3,12 @@
 // src/app/page.tsx
 import './globals.css';
 import React, { useState } from 'react';
-import Home from './Index/page';  // Adjusted import for Home
-import Jobs from './Jobs/page';  // Adjusted import for Jobs
-import Profile from './Profile/page';  // Adjusted import for Profile
-import Admin from './AdminProfile/page';  // Adjusted import for Admin
-import SignIn from './SignIn/page';  // Adjusted import for SignIn
+import Home from './Index/page';  
+import RoleBased from './RoleBasedHome/page';
+import Jobs from './Jobs/page';  
+import Profile from './Profile/page';  
+import Admin from './AdminProfile/page';  
+import SignIn from './SignIn/page'; 
 
 const Page: React.FC = () => {
   const [currentPage, setCurrentPage] = useState('home');
@@ -15,7 +16,7 @@ const Page: React.FC = () => {
   const renderPage = () => {
     switch (currentPage) {
       case 'home':
-        return <Home />;
+        return <RoleBased />;
       case 'jobs':
         return <Jobs />;
       case 'profile':
@@ -25,7 +26,7 @@ const Page: React.FC = () => {
       case 'signin':
         return <SignIn />;
       default:
-        return <Home />;
+        return <RoleBased />;
     }
   };
 

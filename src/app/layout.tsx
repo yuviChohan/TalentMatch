@@ -11,7 +11,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const links = [
-    { name: 'Home', path: '/' },
+    { name: 'Home', path: '/RoleBasedHome' },
     { name: 'Jobs', path: '/Jobs' },
     { name: 'Profile', path: '/Profile' },
   ];

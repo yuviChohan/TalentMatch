@@ -79,7 +79,7 @@ const SignIn: React.FC = () => {
   };
 
   const redirectToHome = () => {
-    window.location.href = "/Index";
+    window.location.href = "/Jobs";
   };
 
   const signInWithEmail = () => {
@@ -312,7 +312,7 @@ const SignIn: React.FC = () => {
     <main className="flex min-h-screen items-center justify-center p-6 bg-gradient-to-tr from-blue-500">
       <div className="w-full max-w-md bg-white shadow-lg rounded-lg p-8">
         <div className="flex justify-center mb-6">
-          <Link href="/Index">
+          <Link href="/RoleBasedHome">
             <img src="logo.png" alt="Logo" className="h-16" />
           </Link>
         </div>

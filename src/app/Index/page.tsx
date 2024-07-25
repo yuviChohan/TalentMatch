@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 const Home: React.FC = () => {
     return (
-        <div className="bg-gradient-to-r from-blue-200 to-white min-h-screen text-gray-800">
+        <div className="bg-gradient-to-r from-blue-200 to-white min-h-screen text-gray-800 p-6">
             <main className="container mx-auto py-16">
                 <div className="flex items-center justify-center">
                     <div className="max-w-3xl">
