@@ -1,7 +1,18 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { auth } from "../firebase";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInAnonymously, signOut, onAuthStateChanged, sendPasswordResetEmail, fetchSignInMethodsForEmail, sendEmailVerification } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInAnonymously,
+  signOut,
+  onAuthStateChanged,
+  sendPasswordResetEmail,
+  fetchSignInMethodsForEmail,
+  sendEmailVerification,
+} from "firebase/auth";
 import Link from "next/link";
 
 const SignIn: React.FC = () => {
@@ -19,7 +30,7 @@ const SignIn: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [showAdditionalInfo, setShowAdditionalInfo] = useState(false);
   const [showForgotPasswordPrompt, setShowForgotPasswordPrompt] = useState(false);
-  const [userInfo, setUserInfo] = useState({ "uid": "", "first_name": "", "last_name": "", "dob": "", "phone_number": "", "email": "" });
+  const [userInfo, setUserInfo] = useState({ uid: "", first_name: "", last_name: "", dob: "", phone_number: "", email: "" });
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -37,7 +48,7 @@ const SignIn: React.FC = () => {
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
-    setUserInfo((prev) => ({ ...prev, "email": e.target.value }));
+    setUserInfo((prev) => ({ ...prev, email: e.target.value }));
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,22 +61,22 @@ const SignIn: React.FC = () => {
 
   const handleFirstNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFirstName(e.target.value);
-    setUserInfo((prev) => ({ ...prev, "first_name": e.target.value }));
+    setUserInfo((prev) => ({ ...prev, first_name: e.target.value }));
   };
 
   const handleLastNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLastName(e.target.value);
-    setUserInfo((prev) => ({ ...prev, "last_name": e.target.value }));
+    setUserInfo((prev) => ({ ...prev, last_name: e.target.value }));
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPhone(e.target.value);
-    setUserInfo((prev) => ({ ...prev, "phone_number": e.target.value }));
+    setUserInfo((prev) => ({ ...prev, phone_number: e.target.value }));
   };
 
   const handleDobChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDob(e.target.value);
-    setUserInfo((prev) => ({ ...prev, "dob": e.target.value.split('-').reverse().join('') }));
+    setUserInfo((prev) => ({ ...prev, dob: e.target.value.split('-').reverse().join('') }));
   };
 
   const togglePasswordVisibility = () => {
@@ -119,7 +130,7 @@ const SignIn: React.FC = () => {
           last_name: lastName,
           dob: formattedDob,
           phone_number: phone,
-          email: email
+          email: email,
         };
         setUserInfo(updatedUserInfo);
         await sendEmailVerification(user);
@@ -133,7 +144,6 @@ const SignIn: React.FC = () => {
       });
   };
 
-  // Handle sign up with email
   const saveEmailUserToDatabase = async (userInfo: any) => {
     try {
       const response = await fetch('https://resumegraderapi.onrender.com/users/', {
@@ -181,15 +191,15 @@ const SignIn: React.FC = () => {
       if (user.emailVerified) {
         console.log(user);
         setMessage("Signed in with Google!");
-        redirectToHome();
         setUserInfo({
-        "first_name": user.displayName?.split(' ')[0] || "",
-        "last_name": user.displayName?.split(' ')[1] || "",
-        "dob": dob,
-        "uid": user.uid,
-        "phone_number": phone,
-        "email": user.email || ""
-      });
+          first_name: user.displayName?.split(' ')[0] || "",
+          last_name: user.displayName?.split(' ')[1] || "",
+          dob: dob,
+          uid: user.uid,
+          phone_number: phone,
+          email: user.email || "",
+        });
+        setShowAdditionalInfo(true); // Show additional info form for Google sign-in
       } else {
         setMessage("Please verify your email before signing in.");
         await signOut(auth);
@@ -206,7 +216,6 @@ const SignIn: React.FC = () => {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
 
-      // Check if the email is already in use
       const methods = await fetchSignInMethodsForEmail(auth, user.email!);
       if (methods.length > 0) {
         setMessage("This email is already associated with an existing account.");
@@ -218,15 +227,15 @@ const SignIn: React.FC = () => {
       await sendEmailVerification(user);
       await signOut(auth);
       setUserInfo({
-        "first_name": user.displayName?.split(' ')[0] || "",
-        "last_name": user.displayName?.split(' ')[1] || "",
-        "dob": dob,
-        "uid": user.uid,
-        "phone_number": phone,
-        "email": user.email || ""
+        first_name: user.displayName?.split(' ')[0] || "",
+        last_name: user.displayName?.split(' ')[1] || "",
+        dob: dob,
+        uid: user.uid,
+        phone_number: phone,
+        email: user.email || "",
       });
       setMessage("Signed up with Google! Please verify your email and then sign in.");
-      setShowAdditionalInfo(true);
+      setShowAdditionalInfo(true); // Show additional info form for Google sign-up
     } catch (error: any) {
       console.error(error);
       setMessage("Error signing up with Google: " + (error.message || error.toString()));
@@ -265,9 +274,10 @@ const SignIn: React.FC = () => {
     }
 
     try {
-      await saveUserToDatabase(); // Need further testing
+      await saveUserToDatabase();
       setShowAdditionalInfo(false);
       setMessage("Signed up with Google!");
+      redirectToHome();
     } catch (error) {
       console.error(error);
       setMessage("Error saving user to database.");
@@ -409,7 +419,7 @@ const SignIn: React.FC = () => {
               </>
             )}
 
-            {showEmailForm && (
+            {showEmailForm && isSignUp && (
               <div className="w-full">
                 <div className="mb-4">
                   <input
