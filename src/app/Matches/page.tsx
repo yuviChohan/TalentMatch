@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import JobCard from '../components/JobCard';
+import Loading from '../components/Loading';
 
 interface MatchComponentProps {
   match: { grade: string };
@@ -30,6 +31,7 @@ const MatchesPage: React.FC = () => {
   const [showStatusList, setShowStatusList] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<any | null>(null);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const uniqueLocations = jobs.map(job => job.location).filter((location, index, array) => array.indexOf(location) === index);
 
   useEffect(() => {
@@ -53,6 +55,36 @@ const MatchesPage: React.FC = () => {
 
     fetchJobs();
   }, [uid]);
+
+  const handleFeedback = async () => {
+    const feedbackText = window.prompt("Please enter your feedback:");
+    if (feedbackText) {
+      const data = {
+        match_id: selectedMatchId,
+        feedback_text: feedbackText,
+        auth_uid: uid
+      };
+  
+      try {
+        const response = await fetch('https://resumegraderapi.onrender.com/feedback/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+  
+        if (response.ok) {
+          console.log('Feedback submitted successfully');
+          alert('Feedback submitted successfully');
+        } else {
+          console.error('Failed to submit feedback');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+  };
 
   const handleButtonClick = (matchId: any) => {
     setSelectedMatchId(matchId === selectedMatchId ? null : matchId);
@@ -101,16 +133,18 @@ const MatchesPage: React.FC = () => {
       alert('Please select a job to grade.');
       return;
     }
-
+    setIsLoading(true);
     const ws = new WebSocket(`https://resumegraderapi.onrender.com/grade/job/real-time/${selectedJob.job_id}?auth_uid=${uid}`);
 
     ws.onmessage = (event) => {
       console.log('WebSocket message received:', event.data);
       updateMatchDetails(event.data);
+      setIsLoading(false); 
     };
 
     ws.onerror = (error) => {
       console.error('WebSocket error:', error);
+      setIsLoading(false);
     };
     
   };
@@ -341,68 +375,79 @@ const MatchesPage: React.FC = () => {
                 ))}
               </div>
             </div>
-            <div className="w-3/5 p-4">
-              {selectedJob ? (
-              <div className="bg-white p-6 rounded shadow-md">
-                <h2 className="text-2xl font-bold mb-2 text-gray-800">{selectedJob.title}</h2>
-                <button
-                  onClick={connectWebSocket}
-                  className="float-right bg-blue-500 text-black rounded px-2 py-1 hover:bg-cyan-600 hover:text-white"
-                >
-                  Start Grading
-                </button>
-                {matchDetails && matchDetails.length > 0 ? (
-                  <div className='mt-3'>
-                    <h3 className="text-lg text-black font-bold mb-2">Match Details:</h3>
-                    {matchDetails.map((match:any) => (
-                      <div key={match.match_id} className={`mb-2 text-black border border-solid ${selectedMatchId === match.match_id ? 'border-2 border-blue-300 bg-blue-100' : 'border-stone-100 hover:bg-blue-200'} shadow-md rounded-md p-4`}>
-                        <div onClick={() => handleMatchClick(match.match_id, match.uid)} className='cursor-pointer'>
-                          <div className='float-right text-right text-blue-700 ml-2'>
-                            <p><strong>{match.grade}</strong></p>
-                            <button onClick={handleButtonClick}>Update Status</button>
-                            {selectedMatchId === match.match_id && (
-                              <div className="border border-solid border-blue-500 rounded-md my-1 ml-1 p-1">
-                                <ul className='text-black text-sm'>
-                                <li
-                                    onClick={() => handleStatusSelect('SHORTLISTED', 701)}
-                                    className={`cursor-pointer ${selectedOption === 'SHORTLISTED' ? 'font-bold text-blue-500' : ''}`}
-                                  >
-                                    SHORTLISTED
-                                  </li>
-                                  <li
-                                    onClick={() => handleStatusSelect('SELECTED', 710)}
-                                    className={`cursor-pointer ${selectedOption === 'SELECTED' ? 'font-bold text-blue-500' : ''}`}
-                                  >
-                                    SELECTED
-                                  </li>
-                                  <li
-                                    onClick={() => handleStatusSelect('CONTACTED', 720)}
-                                    className={`cursor-pointer ${selectedOption === 'CONTACTED' ? 'font-bold text-blue-500' : ''}`}
-                                  >
-                                    CONTACTED
-                                  </li>
-                                </ul>
-                                <button onClick={handleSubmit} className='mt-3 p-1 hover:bg-blue-500 hover:text-white rounded-md'>Submit</button>
-                              </div>
-                            )}
+            {isLoading && <div className='text-black font-bold w-3/5 p-4 text-center mt-10' >Loading...</div>}
+            {!isLoading && (
+              <div className="w-3/5 p-4">
+                {selectedJob ? (
+                <div className="bg-white p-6 rounded shadow-md">
+                  <h2 className="text-2xl font-bold mb-2 text-gray-800">{selectedJob.title}</h2>
+                  <button
+                    onClick={connectWebSocket}
+                    className="float-right bg-blue-500 text-black rounded px-2 py-1 hover:bg-cyan-600 hover:text-white"
+                  >
+                    Start Grading
+                  </button>
+                  {matchDetails && matchDetails.length > 0 ? (
+                    <div className='mt-3'>
+                      <h3 className="text-lg text-black font-bold mb-2">Match Details:</h3>
+                      {matchDetails.map((match:any) => (
+                        <div key={match.match_id} className={`mb-2 text-black border border-solid ${selectedMatchId === match.match_id ? 'border-2 border-blue-300 bg-blue-100' : 'border-stone-100 hover:bg-blue-200'} shadow-md rounded-md p-4`}>
+                          <div onClick={() => handleMatchClick(match.match_id, match.uid)} className='cursor-pointer'>
+                            <div className='float-right text-right text-blue-700 ml-2'>
+                              <p><strong>{match.grade}</strong></p>
+                              {selectedMatchId === match.match_id && (
+                                <div>
+                                  <button onClick={handleButtonClick}>Update Status</button>
+                                  <div className="border border-solid border-blue-500 rounded-md my-1 ml-1 p-1">
+                                    <ul className='text-black text-sm'>
+                                    <li
+                                        onClick={() => handleStatusSelect('Shortlisted', 701)}
+                                        className={`cursor-pointer ${selectedOption === 'Shortlisted' ? 'font-bold text-blue-500' : ''}`}
+                                      >
+                                        Shortlisted
+                                      </li>
+                                      <li
+                                        onClick={() => handleStatusSelect('Selected', 710)}
+                                        className={`cursor-pointer ${selectedOption === 'Selected' ? 'font-bold text-blue-500' : ''}`}
+                                      >
+                                        Selected
+                                      </li>
+                                      <li
+                                        onClick={() => handleStatusSelect('Contacted', 720)}
+                                        className={`cursor-pointer ${selectedOption === 'Contacted' ? 'font-bold text-blue-500' : ''}`}
+                                      >
+                                        Contacted
+                                      </li>
+                                      <li
+                                        onClick={() => handleFeedback()}
+                                        className="cursor-pointer"
+                                      >
+                                        Feedback
+                                      </li>                                    
+                                    </ul>
+                                    <button onClick={handleSubmit} className='my-1 hover:bg-blue-500 hover:text-white rounded-md'>Submit</button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            <p><strong>Match ID:</strong> {match.match_id}</p>
+                            <p><strong>Status:</strong> {match.status}</p>
+                            <p><strong>Applicant:</strong> {match.user.name.first_name} {match.user.name.last_name}</p>
                           </div>
-                          <p><strong>Match ID:</strong> {match.match_id}</p>
-                          <p><strong>Status:</strong> {match.status}</p>
-                          <p><strong>Applicant:</strong> {match.user.name.first_name} {match.user.name.last_name}</p>
+                          {selectedMatchId === match.match_id && renderResumeDetails()}
                         </div>
-                        {selectedMatchId === match.match_id && renderResumeDetails()}
-                      </div>
-                    ))}
-                    {/* {renderResumeDetails()} */}
-                  </div>
+                      ))}
+                      {/* {renderResumeDetails()} */}
+                    </div>
+                  ) : (
+                    <p>No match details found.</p>
+                  )}
+                </div>
                 ) : (
-                  <p>No match details found.</p>
+                  <div className="text-center text-gray-500 w-full">Select a job to view matches.</div>
                 )}
               </div>
-              ) : (
-                <div className="text-center text-gray-500 w-full">Select a job to view matches.</div>
-              )}
-            </div>
+            )}
           </div>
         )}
       </div>
