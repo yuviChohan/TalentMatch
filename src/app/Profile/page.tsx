@@ -2,7 +2,9 @@
 import React from 'react';
 import UserProfile from '../UserProfile/page';
 import AdminProfile from '../AdminProfile/page';
+import OwnerProfile from '../OwnerProfile/page';
 import { useAuth } from '../contexts/AuthContext';
+
 
 const Profile: React.FC = () => {
   const { user } = useAuth();
@@ -11,12 +13,7 @@ const Profile: React.FC = () => {
     if (user?.is_admin) {
       return <AdminProfile />;
     } else if (user?.is_owner) {
-      return (
-        <div>
-          <h2 className="text-3xl font-bold">Owner Profile</h2>
-          <p className="text-lg">Owner side pages are under construction.</p>
-        </div>
-      );
+      return <OwnerProfile/>;;
     } else {
       return <UserProfile />;
     }

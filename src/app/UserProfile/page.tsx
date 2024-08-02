@@ -37,7 +37,6 @@ const UserProfile: React.FC = () => {
     { institution: '', course: '', startDate: '', endDate: '', isSaved: false, isExpanded: true }
   ]);
   const [skills, setSkills] = useState<string[]>([]);
-  const [appliedJobs, setAppliedJobs] = useState<{ title: string; company: string; status: string; }[]>([]);
 
   const currentDate = new Date().toISOString().split('T')[0];
   const minDate = new Date(new Date().setFullYear(new Date().getFullYear() - 50)).toISOString().split('T')[0];
@@ -186,7 +185,7 @@ const UserProfile: React.FC = () => {
   };
 
   const validateProfile = () => {
-    let missingFields = [];
+    const missingFields = [];
 
     // Check Work History for empty or null fields
     for (const entry of workHistory) {

@@ -11,12 +11,7 @@ const Jobs: React.FC = () => {
     if (user?.is_admin) {
       return <AdminJobs />;
     } else if (user?.is_owner) {
-      return (
-        <div>
-          <h2 className="text-3xl font-bold">Owner Jobs</h2>
-          <p className="text-lg">Owner side pages are under construction.</p>
-        </div>
-      );
+      return <AdminJobs/>;
     } else {
       return <UserJobs />;
     }

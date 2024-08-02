@@ -3,7 +3,6 @@
 // src/app/page.tsx
 import './globals.css';
 import React, { useState } from 'react';
-import Home from './Index/page';  
 import RoleBased from './RoleBasedHome/page';
 import Jobs from './Jobs/page';  
 import Profile from './Profile/page';  
@@ -11,7 +10,7 @@ import Admin from './AdminProfile/page';
 import SignIn from './SignIn/page'; 
 
 const Page: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState('home');
+  const [currentPage] = useState('home');
 
   const renderPage = () => {
     switch (currentPage) {

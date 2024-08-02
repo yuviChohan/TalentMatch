@@ -68,7 +68,7 @@ const NavBar: React.FC<NavBarProps> = ({ links }) => {
           )}
         </div>
       </nav>
-      <div className="h-1 bg-gray-900 shadow-md"></div>
+      <div className="h-0.5 bg-gray-400 shadow-md"></div>
     </>
   );
 };

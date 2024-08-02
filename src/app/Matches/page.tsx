@@ -32,6 +32,7 @@ const MatchesPage: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<any | null>(null);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [feedbackDetails, setFeedbackDetails] = useState<any[]>([]);
   const uniqueLocations = jobs.map(job => job.location).filter((location, index, array) => array.indexOf(location) === index);
 
   useEffect(() => {
@@ -171,6 +172,7 @@ const MatchesPage: React.FC = () => {
 
   const handleMatchClick = async (matchId: string, match_uid: string) => {
     setSelectedMatchId(matchId); // Store selected match's uid
+    setFeedbackDetails([]); // Clear feedback details
     try {
       const response = await fetch(`https://resumegraderapi.onrender.com/resumes/${match_uid}`);
       if (!response.ok) {
@@ -178,18 +180,25 @@ const MatchesPage: React.FC = () => {
       }
       const data = await response.json();
       setResumeDetails(data); // Store fetched resume details
+      // Fetch feedback details
+      const feedbackResponse = await fetch(`https://resumegraderapi.onrender.com/feedback/?match_id=${matchId}&all_feedback=false`);
+      if (!feedbackResponse.ok) {
+        throw new Error('Failed to fetch feedback details');
+      }
+      const feedbackData = await feedbackResponse.json();
+      setFeedbackDetails(feedbackData); // Store fetched feedback details
     } catch (error) {
       console.error('Error fetching resume details:', error);
     }
   };
   
   const renderResumeDetails = () => {
-    if (!resumeDetails) return null; // Do not render if no resume details are available
+    if (!resumeDetails) return null; // Not render if no resume details are available
     return (
-      <div className="mt-2">
+      <div className="mt-3 pb-3">
         <h3 className="font-semibold">Resume Details:</h3>
         <p>Skills: {resumeDetails.skills.join(', ')}</p>
-        <div className="mt-2">
+        <div className="my-2">
           <h2 className="font-semibold" >Experience:</h2>
           {resumeDetails.experience.map((exp: any, index: number) => (
             <div key={index}>
@@ -199,7 +208,14 @@ const MatchesPage: React.FC = () => {
             </div>
           ))}
         </div>
-        {/* Render education and other sections similarly */}
+        {feedbackDetails.length > 0 && (
+          <div className="">
+            <h3 className="font-semibold text-blue-700">Feedback:</h3>
+            {feedbackDetails.map((feedback, index) => (
+              <p key={index}>{feedback.feedback_text}</p>
+            ))}
+          </div>
+        )}
       </div>
     );
   };
@@ -383,7 +399,7 @@ const MatchesPage: React.FC = () => {
                   <h2 className="text-2xl font-bold mb-2 text-gray-800">{selectedJob.title}</h2>
                   <button
                     onClick={connectWebSocket}
-                    className="float-right bg-blue-500 text-black rounded px-2 py-1 hover:bg-cyan-600 hover:text-white"
+                    className="float-right bg-blue-500 text-white rounded px-2 py-1 hover:bg-green-500 hover:text-white transform transition-transform duration-300 hover:scale-105 hover:rotate-3"
                   >
                     Start Grading
                   </button>
@@ -402,30 +418,30 @@ const MatchesPage: React.FC = () => {
                                     <ul className='text-black text-sm'>
                                     <li
                                         onClick={() => handleStatusSelect('Shortlisted', 701)}
-                                        className={`cursor-pointer ${selectedOption === 'Shortlisted' ? 'font-bold text-blue-500' : ''}`}
+                                        className={`mb-1 cursor-pointer bg-blue-500 rounded-md text-white hover:font-bold text-center ${selectedOption === 'Shortlisted' ? 'font-bold bg-green-600' : ''}`}
                                       >
                                         Shortlisted
                                       </li>
                                       <li
                                         onClick={() => handleStatusSelect('Selected', 710)}
-                                        className={`cursor-pointer ${selectedOption === 'Selected' ? 'font-bold text-blue-500' : ''}`}
+                                        className={`mb-1 cursor-pointer bg-blue-500 rounded-md text-white hover:font-bold text-center ${selectedOption === 'Selected' ? 'font-bold bg-green-600' : ''}`}
                                       >
                                         Selected
                                       </li>
                                       <li
                                         onClick={() => handleStatusSelect('Contacted', 720)}
-                                        className={`cursor-pointer ${selectedOption === 'Contacted' ? 'font-bold text-blue-500' : ''}`}
+                                        className={`mb-1 cursor-pointer bg-blue-500 rounded-md text-white hover:font-bold text-center ${selectedOption === 'Contacted' ? 'font-bold bg-green-600' : ''}`}
                                       >
                                         Contacted
                                       </li>
                                       <li
                                         onClick={() => handleFeedback()}
-                                        className="cursor-pointer"
+                                        className="mb-1 cursor-pointer bg-blue-500 rounded-md text-white hover:font-bold text-center "
                                       >
                                         Feedback
                                       </li>                                    
                                     </ul>
-                                    <button onClick={handleSubmit} className='my-1 hover:bg-blue-500 hover:text-white rounded-md'>Submit</button>
+                                    <button onClick={handleSubmit} className='px-1 text-sm hover:bg-blue-500 hover:text-white rounded-md transform transition-transform duration-300 hover:scale-105 hover:rotate-3'>Submit</button>
                                   </div>
                                 </div>
                               )}

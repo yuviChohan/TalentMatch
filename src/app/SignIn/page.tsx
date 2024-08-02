@@ -14,6 +14,7 @@ import {
   sendEmailVerification,
 } from "firebase/auth";
 import Link from "next/link";
+import InputMask from 'react-input-mask';
 
 const SignIn: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -318,6 +319,12 @@ const SignIn: React.FC = () => {
   const currentDate = new Date().toISOString().split('T')[0];
   const minDate = "1909-01-01";
 
+
+  const isPhoneNumberValid = (phone) => {
+    const phoneRegex = /^[0-9]{2}-[0-9]{10}$/;
+    return phoneRegex.test(phone);
+  };
+
   return (
     <main className="flex min-h-screen items-center justify-center p-6 bg-gradient-to-tr from-blue-500">
       <div className="w-full max-w-md bg-white shadow-lg rounded-lg p-8">
@@ -440,13 +447,16 @@ const SignIn: React.FC = () => {
                   />
                 </div>
                 <div className="mb-4">
-                  <input
-                    type="text"
+                  <InputMask
+                    mask="99-9999999999"
                     placeholder="Phone Number (Optional)"
                     value={phone}
                     onChange={handlePhoneChange}
                     className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
                   />
+                  {!isPhoneNumberValid(phone) && (
+                    <p className="text-red-500 text-sm mt-1">Format: 00-1234567890</p>
+                  )}
                 </div>
                 <div className="mb-4">
                   <input
@@ -502,7 +512,8 @@ const SignIn: React.FC = () => {
                 </div>
                 <button
                   onClick={signUpWithEmail}
-                  className="w-full p-3 mb-4 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors duration-300"
+                  className={`w-full p-3 mb-4 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors duration-300 ${!isPhoneNumberValid(phone) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  disabled={!isPhoneNumberValid(phone)}
                 >
                   Sign up with Email
                 </button>
@@ -543,13 +554,16 @@ const SignIn: React.FC = () => {
                 />
               </div>
               <div className="mb-4">
-                <input
-                  type="text"
+                <InputMask
+                  mask="99-9999999999"
                   placeholder="Phone Number (Optional)"
                   value={phone}
                   onChange={handlePhoneChange}
                   className="w-full p-3 border border-gray-300 rounded-lg text-gray-800"
                 />
+                {!isPhoneNumberValid(phone) && (
+                  <p className="text-red-500 text-sm mt-1">Format: 00-1234567890</p>
+                )}
               </div>
               <div className="mb-4">
                 <input
@@ -564,7 +578,8 @@ const SignIn: React.FC = () => {
               </div>
               <button
                 onClick={handleAdditionalInfoSubmit}
-                className="w-full p-3 mb-4 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors duration-300"
+                className={`w-full p-3 mb-4 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors duration-300 ${!isPhoneNumberValid(phone) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={!isPhoneNumberValid(phone)}
               >
                 Submit
               </button>

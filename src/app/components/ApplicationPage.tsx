@@ -9,17 +9,19 @@ interface ApplicationPageProps {
   job: any;
   goBack: () => void;
   navigateToProfile: () => void;
-  //uid: string;
+  setAppliedJobs: React.Dispatch<React.SetStateAction<any[]>>;
+  appliedJobs: any[];
 }
 
-const ApplicationPage: React.FC<ApplicationPageProps> = ({ job, goBack, navigateToProfile }) => {
+const ApplicationPage: React.FC<ApplicationPageProps> = ({ job, goBack, navigateToProfile, setAppliedJobs, appliedJobs }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resume, setResume] = useState("");
   const [coverLetter, setCoverLetter] = useState("");
   const [resumeTitle, setResumeTitle] = useState(""); 
   const [skills, setSkills] = useState([]);
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const { uid } = useAuth();
-  
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -45,48 +47,55 @@ const ApplicationPage: React.FC<ApplicationPageProps> = ({ job, goBack, navigate
     fetchData();
   }, [uid]); 
 
-  // const handleEditClick = () => {
-  //   // Navigate to UserProfile page
-  // };
-
-  const handleSubmitClick = async () => {
-    setIsSubmitting(true); 
-  
-    const postData = {
-      uid: uid, 
-      job_id: job.job_id,
-      selected_skills: skills
-    };
-  
+  const applyForJob = async () => {
     try {
       const response = await fetch('https://resumegraderapi.onrender.com/matches/', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify(postData),
+        body: JSON.stringify({
+          uid: uid,
+          job_id: job.job_id,
+          selected_skills: selectedSkills
+        })
       });
-  
+
       if (!response.ok) {
-        throw new Error('Failed to create match');
+        const errorData = await response.json();
+        console.error('Error response:', errorData);
+        throw new Error(`Failed to apply for job: ${errorData.message}`);
       }
-  
+
       const result = await response.json();
       console.log('Match created successfully:', result);
+
     } catch (error) {
-      console.error('Error creating match:', error);
+      console.error('Error applying for job:', error);
+      window.alert(`Error applying for job. Please try again later. ${error.message}`);
     }
+  };
+
+  const handleSkillClick = (skill: string) => {
+    setSelectedSkills(prev => 
+      prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill]
+    );
+  };
+
+  const handleSubmitClick = async () => {
+    if (!resumeTitle) {
+      window.alert('Please upload your resume before applying.');
+      return;
+    }
+
+    setIsSubmitting(true); 
+    await applyForJob();
   };
 
   const handleBackClick = () => {
     setIsSubmitting(false);
   };
-
-  // const handleResumeUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   if (event.target.files && event.target.files[0]) {
-  //     setResume(event.target.files[0].name);
-  //   }
-  // };
 
   const handleCoverLetterChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setCoverLetter(event.target.value);
@@ -121,16 +130,33 @@ const ApplicationPage: React.FC<ApplicationPageProps> = ({ job, goBack, navigate
               <div className="border border-gray-300 rounded p-4 text-center">
                 <span className="text-gray-500">{resumeTitle ? resumeTitle : "No resume uploaded"}</span>
               </div>
-              {resumeTitle && <Link href="/UserProfile" className="text-blue-500 mt-2">Edit</Link>}
+              {resumeTitle ? (
+                <Link href="/UserProfile" className="text-blue-500 mt-2">Edit</Link>
+              ) : (
+                <p className="text-red-500 mt-2">Please upload your resume on profile</p>
+              )}
             </div>
             <div className="mb-6">
               <h2 className="text-lg font-bold text-gray-800 mb-4">Skills:</h2>
               <ul className="text-gray-800 list-disc pl-5">
                 {skills.map((skill, index) => (
-                  <li key={index} className="mb-2 bg-gray-100 rounded-md p-2 shadow-sm"
-                  >{skill}</li>
+                  <li key={index} className="mb-2 bg-gray-100 rounded-md p-2 shadow-sm">{skill}</li>
                 ))}
               </ul>
+            </div>
+            <div className="mb-6">
+              <h2 className="text-lg font-bold text-gray-800 mb-4">Required Skills:</h2>
+              <div className="flex flex-wrap gap-2">
+                {job.required_skills.map((skill: string, index: number) => (
+                  <button
+                    key={index}
+                    onClick={() => handleSkillClick(skill)}
+                    className={`px-4 py-2 rounded ${selectedSkills.includes(skill) ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'}`}
+                  >
+                    {skill}
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="mb-6">
               <h2 className="text-lg font-bold text-gray-800 mb-4">Cover Letter</h2>
@@ -158,7 +184,8 @@ const ApplicationPage: React.FC<ApplicationPageProps> = ({ job, goBack, navigate
         <div className="flex justify-center mt-6">
           <button
             onClick={handleSubmitClick}
-            className="bg-green-500 text-white rounded px-4 py-2 hover:bg-green-600"
+            className={`rounded px-4 py-2 ${resumeTitle ? 'bg-green-500 hover:bg-green-600 text-white' : 'bg-gray-400 text-gray-700 cursor-not-allowed'}`}
+            disabled={!resumeTitle}
           >
             Submit Application
           </button>

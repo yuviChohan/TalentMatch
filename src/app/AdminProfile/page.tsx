@@ -1,186 +1,166 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
-const AdminProfile = () => {
-  const [profilePic, setProfilePic] = useState('/path/to/admin-icon.png');
-  const [linkedInUrl, setLinkedInUrl] = useState('');
+const AdminProfile: React.FC = () => {
+  const { uid, user } = useAuth();
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
   const [email, setEmail] = useState('');
-  const [mobileNumber, setMobileNumber] = useState('');
-  const [address, setAddress] = useState('');
-  const [name, setName] = useState('');
-  const [jobTitle, setJobTitle] = useState('');
-  const [bio, setBio] = useState('');
-  const [organization, setOrganization] = useState('');
-  const [skills, setSkills] = useState('');
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [successMessage, setSuccessMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    if (user) {
+      setFirstName(user.name.first_name || '');
+      setLastName(user.name.last_name || '');
+      setEmail(user.email || '');
+      setPhoneNumber(user.phone_number || ''); 
+      const dobString = `${user.dob.year}-${String(user.dob.month).padStart(2, '0')}-${String(user.dob.day).padStart(2, '0')}`;
+      setDateOfBirth(dobString);
+    }
+  }, [user]);
+
   const validate = () => {
-    const newErrors = {};
+    const newErrors: { [key: string]: string } = {};
+    if (!firstName) newErrors.firstName = 'First name is required';
+    if (!lastName) newErrors.lastName = 'Last name is required';
+    if (!phoneNumber) newErrors.phoneNumber = 'Phone number is required';
+    if (!dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required';
     if (!email) newErrors.email = 'Email is required';
-    if (!mobileNumber) newErrors.mobileNumber = 'Mobile number is required';
-    if (!name) newErrors.name = 'Name is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleProfilePicChange = (event) => {
-    if (event.target.files && event.target.files[0]) {
-      const file = event.target.files[0];
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfilePic(reader.result);
-      };
-      reader.readAsDataURL(file);
+  const handleSubmit = async () => {
+    if (!validate()) return;
+    setIsSubmitting(true);
+
+    const dobParts = dateOfBirth.split('-');
+    const formattedDob = `${dobParts[2]}${dobParts[1]}${dobParts[0]}`;
+
+    const userInfo = {
+      uid: uid,
+      first_name: firstName,
+      last_name: lastName,
+      dob: formattedDob,
+      phone_number: phoneNumber,
+      email: email,
+    };
+
+    try {
+      const response = await fetch('https://resumegraderapi.onrender.com/users/', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userInfo),
+      });
+
+      if (response.ok) {
+        setSuccessMessage('Profile updated successfully!');
+      } else {
+        setErrors({ form: 'Failed to update profile' });
+      }
+    } catch (error) {
+      setErrors({ form: 'Error updating profile' });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleSubmit = () => {
-    if (!validate()) return;
-    setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setSuccessMessage("Profile updated successfully!");
-    }, 2000);
-  };
-
   const handleReset = () => {
-    setProfilePic('/path/to/admin-icon.png');
-    setLinkedInUrl('');
-    setEmail('');
-    setMobileNumber('');
-    setAddress('');
-    setName('');
-    setJobTitle('');
-    setBio('');
-    setOrganization('');
-    setSkills('');
+    if (user) {
+      setFirstName(user.name.first_name || '');
+      setLastName(user.name.last_name || '');
+      setEmail(user.email || '');
+      setPhoneNumber(user.phone_number || ''); 
+      const dobString = `${user.dob.year}-${String(user.dob.month).padStart(2, '0')}-${String(user.dob.day).padStart(2, '0')}`;
+      setDateOfBirth(dobString);
+    }
     setErrors({});
     setSuccessMessage('');
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto shadow-xl rounded-xl p-8 bg-gradient-to-r from-blue-100 to-blue-300">
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-800">Admin Profile</h1>
-      </div>
-      <div className="grid grid-cols-3 gap-8">
-        <div className="col-span-1 flex flex-col items-center border p-6 rounded-lg shadow-lg bg-white">
-          <div className="w-36 h-36 mb-6 border-4 border-blue-400 rounded-full overflow-hidden shadow-md">
-            <img src={profilePic} alt="Admin Icon" className="w-full h-full object-cover" />
-          </div>
+    <div className="w-full max-w-4xl mx-auto p-8">
+      <div className="p-6 rounded-lg shadow-lg bg-white">
+        <div className="grid grid-cols-2 gap-4">
           <input
-            type="file"
-            accept="image/*"
-            id="profilePicInput"
-            className="hidden"
-            onChange={handleProfilePicChange}
-          />
-          <button
-            className="rounded px-4 py-2 mt-4 bg-blue-500 text-white hover:bg-blue-600 transition duration-300"
-            onClick={() => document.getElementById('profilePicInput').click()}
-          >
-            Update Profile Picture
-          </button>
-        </div>
-        <div className="col-span-2 p-6 rounded-lg shadow-lg bg-white">
-          <div className="grid grid-cols-2 gap-4">
-            <input
-              type="text"
-              placeholder="Name"
-              className="border rounded p-2 mb-4 bg-gray-100 focus:bg-white transition duration-300 text-gray-800"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-            <input
-              type="text"
-              placeholder="Job Title"
-              className="border rounded p-2 mb-4 bg-gray-100 focus:bg-white transition duration-300 text-gray-800"
-              value={jobTitle}
-              onChange={(e) => setJobTitle(e.target.value)}
-            />
-            <input
-              type="text"
-              placeholder="Organization"
-              className="border rounded p-2 mb-4 bg-gray-100 focus:bg-white transition duration-300 text-gray-800"
-              value={organization}
-              onChange={(e) => setOrganization(e.target.value)}
-            />
-            <input
-              type="text"
-              placeholder="Skills"
-              className="border rounded p-2 mb-4 bg-gray-100 focus:bg-white transition duration-300 text-gray-800"
-              value={skills}
-              onChange={(e) => setSkills(e.target.value)}
-            />
-            <input
-              type="email"
-              placeholder="Email"
-              className="border rounded p-2 mb-4 bg-gray-100 focus:bg-white transition duration-300 text-gray-800"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <input
-              type="text"
-              placeholder="Mobile Number"
-              className="border rounded p-2 mb-4 bg-gray-100 focus:bg-white transition duration-300 text-gray-800"
-              value={mobileNumber}
-              onChange={(e) => setMobileNumber(e.target.value)}
-            />
-            <input
-              type="text"
-              placeholder="Address"
-              className="border rounded p-2 mb-4 bg-gray-100 focus:bg-white transition duration-300 text-gray-800 col-span-2"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-            />
-          </div>
-          <textarea
-            placeholder="Bio"
-            className="border rounded p-2 mb-4 h-24 resize-none bg-gray-100 focus:bg-white transition duration-300 w-full text-gray-800"
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
+            type="text"
+            placeholder="First Name"
+            className="border rounded p-2 mb-4 bg-gray-100 focus:bg-white transition duration-300 text-gray-800"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
           />
           <input
             type="text"
-            placeholder="LinkedIn Profile URL"
-            className="border rounded p-2 mb-4 w-full bg-gray-100 focus:bg-white transition duration-300 text-gray-800"
-            value={linkedInUrl}
-            onChange={(e) => setLinkedInUrl(e.target.value)}
+            placeholder="Last Name"
+            className="border rounded p-2 mb-4 bg-gray-100 focus:bg-white transition duration-300 text-gray-800"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
           />
-          {errors.linkedInUrl && <p className="text-sm text-red-500">{errors.linkedInUrl}</p>}
+          <input
+            type="text"
+            placeholder="Phone Number"
+            className="border rounded p-2 mb-4 bg-gray-100 focus:bg-white transition duration-300 text-gray-800"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+          />
+          <input
+            type="date"
+            placeholder="Date of Birth"
+            className="border rounded p-2 mb-4 bg-gray-100 focus:bg-white transition duration-300 text-gray-800"
+            value={dateOfBirth}
+            onChange={(e) => setDateOfBirth(e.target.value)}
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            className="border rounded p-2 mb-4 bg-gray-100 focus:bg-white transition duration-300 text-gray-800"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
+        {Object.keys(errors).map((errorKey) => (
+          <div key={errorKey} className="text-red-500">
+            {errors[errorKey]}
+          </div>
+        ))}
+        {successMessage && (
+          <div className="mt-4 text-center text-green-500 transition-opacity duration-500">
+            {successMessage}
+          </div>
+        )}
+        <div className="flex justify-end mt-8">
+          <button
+            className="bg-gray-500 text-white rounded px-6 py-2 mr-4 hover:bg-gray-600 transition duration-300"
+            onClick={handleReset}
+          >
+            Reset
+          </button>
+          <button
+            className="rounded px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 transition duration-300"
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <span className="flex items-center">
+                <svg
+                  className="animate-spin h-5 w-5 mr-3 border-t-2 border-b-2 border-white"
+                  viewBox="0 0 24 24"
+                ></svg>
+                Submitting...
+              </span>
+            ) : (
+              'Save Profile'
+            )}
+          </button>
         </div>
       </div>
-      <div className="flex justify-end mt-8">
-        <button
-          className="bg-gray-500 text-white rounded px-6 py-2 mr-4 hover:bg-gray-600 transition duration-300"
-          onClick={handleReset}
-        >
-          Reset
-        </button>
-        <button
-          className="rounded px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 transition duration-300"
-          onClick={handleSubmit}
-        >
-          {isSubmitting ? (
-            <span className="flex items-center">
-              <svg
-                className="animate-spin h-5 w-5 mr-3 border-t-2 border-b-2 border-white"
-                viewBox="0 0 24 24"
-              ></svg>
-              Submitting...
-            </span>
-          ) : (
-            'Save Profile'
-          )}
-        </button>
-      </div>
-      {successMessage && (
-        <div className="mt-4 text-center text-green-500 transition-opacity duration-500">
-          {successMessage}
-        </div>
-      )}
     </div>
   );
 };

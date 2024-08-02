@@ -8,6 +8,7 @@ interface SavedJobsPageProps {
   handleApply: (job: any) => void;
   handleDeleteJob: (jobId: string) => void;
   setSavedJobs: (jobs: any[]) => void;
+  appliedJobs: any[]; // Added appliedJobs
 }
 
 const SavedJobsPage: React.FC<SavedJobsPageProps> = ({ 
@@ -15,7 +16,8 @@ const SavedJobsPage: React.FC<SavedJobsPageProps> = ({
   setViewingSavedJobs, 
   handleApply, 
   handleDeleteJob, 
-  setSavedJobs 
+  setSavedJobs,
+  appliedJobs // Added appliedJobs
 }) => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedJob, setSelectedJob] = useState<any>(null);
@@ -27,6 +29,10 @@ const SavedJobsPage: React.FC<SavedJobsPageProps> = ({
     job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
     job.location.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const isJobApplied = (jobId: string) => {
+    return appliedJobs.some(job => job.job_id === jobId);
+  };
 
   const handleDeleteJobFromApi = async (jobId: string) => {
     try {
@@ -87,12 +93,21 @@ const SavedJobsPage: React.FC<SavedJobsPageProps> = ({
                   description={`${job.description.substring(0, 100)}...`}
                 />
                 <div className="flex justify-between mt-4">
-                  <button
-                    onClick={() => handleApply(job)}
-                    className="bg-blue-500 text-white rounded px-4 py-2 w-5/12"
-                  >
-                    Apply Now
-                  </button>
+                  {isJobApplied(job.job_id) ? (
+                    <button
+                      disabled
+                      className="bg-gray-400 text-white rounded px-4 py-2 w-5/12"
+                    >
+                      Applied
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleApply(job)}
+                      className="bg-blue-500 text-white rounded px-4 py-2 w-5/12"
+                    >
+                      Apply Now
+                    </button>
+                  )}
                   <button
                     onClick={() => setSelectedJob(job)}
                     className="bg-gray-500 text-white rounded px-4 py-2 w-5/12"
@@ -155,12 +170,21 @@ const SavedJobsPage: React.FC<SavedJobsPageProps> = ({
               <p className="text-gray-700"><strong>Type:</strong> {selectedJob.job_type}</p>
             </div>
             <p className="text-gray-700 mb-4">{selectedJob.description}</p>
-            <button
-              onClick={() => handleApply(selectedJob)}
-              className="bg-blue-500 text-white rounded px-4 py-2 w-full"
-            >
-              Apply Now
-            </button>
+            {isJobApplied(selectedJob.job_id) ? (
+              <button
+                disabled
+                className="bg-gray-400 text-white rounded px-4 py-2 w-full"
+              >
+                Already Applied
+              </button>
+            ) : (
+              <button
+                onClick={() => handleApply(selectedJob)}
+                className="bg-blue-500 text-white rounded px-4 py-2 w-full"
+              >
+                Apply Now
+              </button>
+            )}
           </div>
         </div>
       )}
