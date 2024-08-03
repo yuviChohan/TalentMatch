@@ -1,6 +1,5 @@
 "use client";
 import React from 'react';
-import NavBar from '../components/NavBar';
 import Link from 'next/link';
 
 const AdminPage: React.FC = () => {
@@ -15,26 +14,11 @@ const AdminPage: React.FC = () => {
             <p className="text-gray-700 text-2xl mb-12">
               Welcome to the admin dashboard.
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex justify-center">
               <Link href="/Matches">
-                <button className="px-6 py-3 rounded-lg transition-colors duration-300 transform hover:scale-110 shadow-lg" style={{ backgroundColor: '#0266FA', color: 'white' }}>
-                  Match Results
-                </button>
-              </Link>
-              <Link href="/AdminSettings">
-                <button className="px-6 py-3 rounded-lg transition-colors duration-300 transform hover:scale-110 shadow-lg" style={{ backgroundColor: '#0266FA', color: 'white' }}>
-                  Settings
-                </button>
-              </Link>
-              <Link href="/AdminNotifications">
-                <button className="px-6 py-3 rounded-lg transition-colors duration-300 transform hover:scale-110 shadow-lg" style={{ backgroundColor: '#0266FA', color: 'white' }}>
-                  Notifications
-                </button>
-              </Link>
-              <Link href="/AdminReports">
-                <button className="px-6 py-3 rounded-lg transition-colors duration-300 transform hover:scale-110 shadow-lg" style={{ backgroundColor: '#0266FA', color: 'white' }}>
-                  Reports
-                </button>
+                <div className="px-12 py-6 rounded-lg transition-transform duration-300 transform hover:scale-110 shadow-lg" style={{ backgroundColor: '#0266FA', color: 'white' }}>
+                  <span className="text-2xl">Match Results</span>
+                </div>
               </Link>
             </div>
           </div>

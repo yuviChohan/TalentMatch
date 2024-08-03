@@ -225,7 +225,7 @@ const OwnerProfile: React.FC = () => {
         )}
       </div>
       <div className="p-6 rounded-lg shadow-lg bg-white mt-8">
-        <h1 className="text-2xl font-bold mb-4">Update User Privileges</h1>
+        <h1 className="text-2xl font-bold mb-4 text-black">Add Admin/Owner</h1>
         <div className="mb-4">
           <label className="block text-gray-700 font-bold mb-2">User Email:</label>
           <input
