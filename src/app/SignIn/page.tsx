@@ -183,15 +183,39 @@ const SignIn: React.FC = () => {
     }
   };
 
+  // Function to fetch all users from the backend
+  const fetchAllUsers = async () => {
+    try {
+      const response = await fetch('https://resumegraderapi.onrender.com/users/?auth_uid=Slayerz.Main');
+      if (!response.ok) {
+        throw new Error('Failed to retrieve users from the database');
+      }
+      const users = await response.json();
+      return users;
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      return [];
+    }
+  };
+
   const signInWithGoogle = async () => {
     const googleProvider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
       await user.reload();
-      if (user.emailVerified) {
-        console.log(user);
+
+      const allUsers = await fetchAllUsers();
+
+      // Check if the user exists in the database
+      const existingUser = allUsers.find(u => u.email === user.email);
+
+      if (existingUser) {
+        // User exists, proceed without form
         setMessage("Signed in with Google!");
+        redirectToHome(); // Redirect to home or dashboard
+      } else {
+        // New user, show additional info form
         setUserInfo({
           first_name: user.displayName?.split(' ')[0] || "",
           last_name: user.displayName?.split(' ')[1] || "",
@@ -201,9 +225,6 @@ const SignIn: React.FC = () => {
           email: user.email || "",
         });
         setShowAdditionalInfo(true); // Show additional info form for Google sign-in
-      } else {
-        setMessage("Please verify your email before signing in.");
-        await signOut(auth);
       }
     } catch (error: any) {
       console.error(error);
@@ -224,19 +245,28 @@ const SignIn: React.FC = () => {
         return;
       }
 
-      console.log(user);
-      await sendEmailVerification(user);
-      await signOut(auth);
-      setUserInfo({
-        first_name: user.displayName?.split(' ')[0] || "",
-        last_name: user.displayName?.split(' ')[1] || "",
-        dob: dob,
-        uid: user.uid,
-        phone_number: phone,
-        email: user.email || "",
-      });
-      setMessage("Signed up with Google! Please verify your email and then sign in.");
-      setShowAdditionalInfo(true); // Show additional info form for Google sign-up
+      const allUsers = await fetchAllUsers();
+
+      // Check if the user exists in the database
+      const existingUser = allUsers.find(u => u.email === user.email);
+
+      if (existingUser) {
+        // User exists, no need for additional form
+        setMessage("Signed up with Google!");
+        redirectToHome(); // Redirect to sign-in page
+      } else {
+        // New user, show additional info form
+        setUserInfo({
+          first_name: user.displayName?.split(' ')[0] || "",
+          last_name: user.displayName?.split(' ')[1] || "",
+          dob: dob,
+          uid: user.uid,
+          phone_number: phone,
+          email: user.email || "",
+        });
+        setMessage("Signed up with Google! Please complete your profile.");
+        setShowAdditionalInfo(true); // Show additional info form for Google sign-up
+      }
     } catch (error: any) {
       console.error(error);
       setMessage("Error signing up with Google: " + (error.message || error.toString()));

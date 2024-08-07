@@ -38,6 +38,7 @@ const PostJob: React.FC = () => {
   const [errors, setErrors] = useState<string[]>([]);
   const [jobId, setJobId] = useState<number | null>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false); // Add loading state
   const { uid } = useAuth();
 
   const validateForm = () => {
@@ -65,6 +66,8 @@ const PostJob: React.FC = () => {
       const formData = new FormData();
       formData.append('file', file);
   
+      setLoading(true); // Start loading
+
       try {
         const response = await fetch(`https://resumegraderapi.onrender.com/jobs/${uid}`, {
           method: 'POST',
@@ -100,6 +103,8 @@ const PostJob: React.FC = () => {
       } catch (error) {
         console.error('Error uploading file:', error);
         alert('An error occurred while uploading the file.');
+      } finally {
+        setLoading(false); // Stop loading
       }
     }
   };
@@ -114,6 +119,7 @@ const PostJob: React.FC = () => {
     }
 
     setErrors([]);
+    setLoading(true); // Start loading
 
     // Format the application deadline to "DDMMYYYY"
     const deadlineParts = applicationDeadline.split('-');
@@ -137,7 +143,7 @@ const PostJob: React.FC = () => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify([])
+        body: JSON.stringify(jobData)
       });
 
       const postData = await postResponse.json();
@@ -170,12 +176,20 @@ const PostJob: React.FC = () => {
     } catch (error) {
       console.error('Error posting job:', error);
       alert('An error occurred while posting the job.');
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
   return (
     <main className="flex flex-col items-center p-6 bg-gradient-to-r from-indigo-300 via-purple-200 to-pink-300 min-h-screen">
       {errors.length > 0 && <ErrorModal errors={errors} onClose={() => setErrors([])} />}
+      {loading && (
+        <div className="fixed inset-0 flex items-center justify-center bg-white bg-opacity-80 z-50">
+          <div className="w-12 h-12 border-4 border-t-4 border-gray-900 border-solid rounded-full animate-spin"></div> {/* Spinner */}
+          <span className="ml-4 text-gray-700">Loading...</span>
+        </div>
+      )}
       <div className="w-full max-w-2xl bg-white shadow-lg rounded-lg p-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-4xl font-bold text-gray-800">Post a New Job</h1>

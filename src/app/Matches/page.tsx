@@ -410,7 +410,11 @@ const MatchesPage: React.FC = () => {
                         <div key={match.match_id} className={`mb-2 text-black border border-solid ${selectedMatchId === match.match_id ? 'border-2 border-blue-300 bg-blue-100' : 'border-stone-100 hover:bg-blue-200'} shadow-md rounded-md p-4`}>
                           <div onClick={() => handleMatchClick(match.match_id, match.uid)} className='cursor-pointer'>
                             <div className='float-right text-right text-blue-700 ml-2'>
+                            {match.grade === -2 ? (
+                              <p><strong style={{ color: 'red' }}>✗</strong></p>
+                            ) : match.grade !== 0 ? (
                               <p><strong>{match.grade}</strong></p>
+                            ) : null}
                               {selectedMatchId === match.match_id && (
                                 <div>
                                   <button onClick={handleButtonClick}>Update Status</button>
@@ -449,6 +453,9 @@ const MatchesPage: React.FC = () => {
                             <p><strong>Match ID:</strong> {match.match_id}</p>
                             <p><strong>Status:</strong> {match.status}</p>
                             <p><strong>Applicant:</strong> {match.user.name.first_name} {match.user.name.last_name}</p>
+                            <p><strong>Email:</strong> <a href={`mailto:${match.user.email}`} className="text-blue-600 hover:underline">
+                              {match.user.email}</a>
+                            </p>
                           </div>
                           {selectedMatchId === match.match_id && renderResumeDetails()}
                         </div>

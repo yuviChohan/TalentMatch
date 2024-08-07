@@ -38,9 +38,36 @@ const UserProfile: React.FC = () => {
   ]);
   const [skills, setSkills] = useState<string[]>([]);
 
+  const [loading, setLoading] = useState(false);
+
   const currentDate = new Date().toISOString().split('T')[0];
   const minDate = new Date(new Date().setFullYear(new Date().getFullYear() - 50)).toISOString().split('T')[0];
   const { uid, user } = useAuth();
+
+  const checkCompletion = () => {
+    // Check if workHistory, educationHistory, and skills are filled
+    const workFilled = workHistory.every(item => 
+      item.company.trim() !== '' &&
+      item.role.trim() !== '' &&
+      item.startDate.trim() !== '' &&
+      (item.currentlyWorking || item.endDate.trim() !== '') &&
+      item.description.trim() !== ''
+    );
+  
+    const educationFilled = educationHistory.every(entry =>
+      entry.institution.trim() !== '' &&
+      entry.course.trim() !== '' &&
+      entry.startDate.trim() !== '' &&
+      entry.endDate.trim() !== ''
+    );
+  
+    const skillsFilled = skills.length > 0;
+  
+    if (workFilled && educationFilled && skillsFilled) {
+      setLoading(false);
+    }
+  };
+  
 
   const fetchAndAutofillResume = async () => {
     try {
@@ -134,6 +161,8 @@ const UserProfile: React.FC = () => {
       }));
       setEducationHistory(newEducationHistory);
 
+      setLoading(false);
+
     } catch (error) {
       console.error('Error uploading resume:', error);
     }
@@ -176,16 +205,18 @@ const UserProfile: React.FC = () => {
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setResume: React.Dispatch<React.SetStateAction<File | null>>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setResume(file);
-      uploadResume(file);
+      setLoading(true); // Start loading
+      uploadResume(file); // Call the function to handle the upload
     }
   };
+  
 
   const validateProfile = () => {
-    const missingFields = [];
+    const missingFields: (string | never)[] = [];
 
     // Check Work History for empty or null fields
     for (const entry of workHistory) {
@@ -223,6 +254,7 @@ const UserProfile: React.FC = () => {
       entry.isSaved = true;
       entry.isExpanded = false;
       setWorkHistory(newWorkHistory);
+      checkCompletion();
     } else {
       alert('Please fill in all fields before saving.');
     }
@@ -235,6 +267,7 @@ const UserProfile: React.FC = () => {
       entry.isSaved = true;
       entry.isExpanded = false;
       setEducationHistory(newEducationHistory);
+      checkCompletion();
     } else {
       alert('Please fill in all fields before saving.');
     }
@@ -288,12 +321,14 @@ const UserProfile: React.FC = () => {
     if (e.key === 'Enter' && e.currentTarget.value.trim() !== '') {
       setSkills([...skills, e.currentTarget.value.trim()]);
       e.currentTarget.value = '';
+      checkCompletion();
     }
   };
 
   const handleRemoveSkill = (index: number) => {
     const newSkills = skills.filter((_, i) => i !== index);
     setSkills(newSkills);
+    checkCompletion();
   };
 
   const handleSaveProfile = async () => {
@@ -434,9 +469,9 @@ const UserProfile: React.FC = () => {
     <div className="w-full max-w-4xl bg-white shadow-xl rounded-xl p-10">
       <div className="flex justify-between items-center mb-4">
         <Link href="/YourApplication">
-        <button className="bg-gray-500 text-white rounded px-4 py-2">
-          Your Applications
-        </button>
+          <button className="bg-gray-500 text-white rounded px-4 py-2">
+            Your Applications
+          </button>
         </Link>
       </div>
       <div className="grid grid-cols-2 gap-4 mb-4">
@@ -488,16 +523,25 @@ const UserProfile: React.FC = () => {
         <button className="bg-green-500 text-white rounded px-4 py-2 w-28" onClick={() => handleUpdateUserInfo()}>Update</button>
         <div className="col-span-2">
           <label className="block text-gray-700 font-bold mb-2">Upload Resume:</label>
-          <label className="block border border-gray-300 rounded p-4 text-center cursor-pointer hover:bg-gray-200">
-            <input
-              type="file"
-              accept=".pdf, .doc, .docx"
-              className="hidden"
-              onChange={(e) => handleFileChange(e, setResume)}
-            />
-            <span className="text-gray-500">{resume ? resume.name : "Select a File"}</span>
-          </label>
-          {resume && <button className="text-red-500 mt-2" onClick={handleRemoveResume}>Remove</button>}
+          {loading ? (
+            <div className="flex justify-center items-center">
+              <div className="spinner-border animate-spin border-t-2 border-b-2 border-gray-900 rounded-full w-8 h-8"></div>
+              <span className="ml-2 text-gray-700">Uploading...</span>
+            </div>
+          ) : (
+            <>
+              <label className="block border border-gray-300 rounded p-4 text-center cursor-pointer hover:bg-gray-200">
+                <input
+                  type="file"
+                  accept=".pdf, .doc, .docx"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+                <span className="text-gray-500">{resume ? resume.name : "Select a File"}</span>
+              </label>
+              {resume && <button className="text-red-500 mt-2" onClick={handleRemoveResume}>Remove</button>}
+            </>
+          )}
         </div>
       </div>
       <div className="mb-4">
@@ -505,12 +549,11 @@ const UserProfile: React.FC = () => {
         {workHistory.map((item, index) => (
           <div key={index} className="border border-gray-300 rounded p-4 mb-2 relative">
             <div className="flex justify-between items-center mb-2">
-              {/*<h2 className="text-lg font-bold text-gray-700">Company {index + 1}</h2>*/}
               {item.isSaved && !item.isExpanded && (
-              <span className="text-md text-gray-700">{item.company}</span>
+                <span className="text-md text-gray-700">{item.company}</span>
               )}
               {item.isSaved && (
-                <button className="text-blue-500 absolute top-4 right-4" onClick={() => handleToggleExpandWorkHistory(index)}>
+                <button className="text-blue-500 absolute top-4 right-4" onClick={() => handleEditWorkHistoryField(index, 'isExpanded', !item.isExpanded)}>
                   {item.isExpanded ? 'Collapse' : 'Expand'}
                 </button>
               )}
@@ -540,7 +583,7 @@ const UserProfile: React.FC = () => {
                     className="border border-gray-300 rounded p-2 w-full text-black"
                     value={item.startDate}
                     max={currentDate}
-                    min={minDate}
+                    min="1900-01-01"
                     onChange={(e) => handleEditWorkHistoryField(index, 'startDate', e.target.value)}
                   />
                 </div>
@@ -568,11 +611,11 @@ const UserProfile: React.FC = () => {
                 </div>
                 <div className="mb-2">
                   <label className="block text-gray-700 mb-2">Description:</label>
-                    <textarea
-                      className="border border-gray-300 rounded p-2 mb-2 w-full text-black"
-                      value={item.description}
-                      onChange={(e) => handleEditWorkHistoryField(index, 'description', e.target.value)}
-                    />
+                  <textarea
+                    className="border border-gray-300 rounded p-2 mb-2 w-full text-black"
+                    value={item.description}
+                    onChange={(e) => handleEditWorkHistoryField(index, 'description', e.target.value)}
+                  />
                 </div>
                 <button
                   className="bg-green-500 text-white rounded px-4 py-2"
@@ -605,54 +648,58 @@ const UserProfile: React.FC = () => {
                 <span className="text-md text-gray-700">{entry.institution}</span>
               )}
               {entry.isSaved && (
-                <button className="text-blue-500 absolute top-4 right-4" onClick={() => handleToggleExpandEducationHistory(index)}>
+                <button className="text-blue-500 absolute top-4 right-4" onClick={() => handleEditEducationField(index, 'isExpanded', !entry.isExpanded)}>
                   {entry.isExpanded ? 'Collapse' : 'Expand'}
                 </button>
               )}
             </div>
             {entry.isExpanded && (
               <>
-                  <label className="block text-gray-700 mb-2">Institution:
-                    <input type="text"
-                      value={entry.institution}
-                      className="border border-gray-300 rounded p-2 mb-2 w-full text-black"
-                      onChange={(e) => handleEditEducationField(index, 'institution', e.target.value)} />
-                  </label>
-                  <label className="block text-gray-700 mb-2">
-                    Course:
-                    <input type="text"
-                      value={entry.course}
-                      className="border border-gray-300 rounded p-2 mb-2 w-full text-black"
-                      onChange={(e) => handleEditEducationField(index, 'course', e.target.value)} />
-                  </label>
-                  <label className="block text-gray-700 mb-2">
-                    Start Date:
-                    <input type="date"
-                      value={entry.startDate}
-                      min={minDate}
-                      max={currentDate}
-                      className="border border-gray-300 rounded p-2 w-full text-black"
-                      onChange={(e) => handleEditEducationField(index, 'startDate', e.target.value)} />
-                  </label>
-                  <label className="block text-gray-700 mb-2">
-                    End Date:
-                    <input type="date"
-                      value={entry.endDate}
-                      min={minDate}
-                      max={currentDate}
-                      className="border border-gray-300 rounded p-2 w-full text-black"
-                      onChange={(e) => handleEditEducationField(index, 'endDate', e.target.value)} />
-                  </label>
-                  <button className="bg-green-500 text-white rounded px-4 py-2" onClick={() => handleSaveEducationHistory(index)}>Save</button>
-                  <button className="bg-red-500 text-white rounded px-4 py-2 ml-2" onClick={() => handleRemoveEducationHistoryFields(index)}>Remove</button>
+                <label className="block text-gray-700 mb-2">Institution:
+                  <input
+                    type="text"
+                    value={entry.institution}
+                    className="border border-gray-300 rounded p-2 mb-2 w-full text-black"
+                    onChange={(e) => handleEditEducationField(index, 'institution', e.target.value)} />
+                </label>
+                <label className="block text-gray-700 mb-2">
+                  Course:
+                  <input
+                    type="text"
+                    value={entry.course}
+                    className="border border-gray-300 rounded p-2 mb-2 w-full text-black"
+                    onChange={(e) => handleEditEducationField(index, 'course', e.target.value)} />
+                </label>
+                <label className="block text-gray-700 mb-2">
+                  Start Date:
+                  <input
+                    type="date"
+                    value={entry.startDate}
+                    min="1900-01-01"
+                    max={currentDate}
+                    className="border border-gray-300 rounded p-2 w-full text-black"
+                    onChange={(e) => handleEditEducationField(index, 'startDate', e.target.value)} />
+                </label>
+                <label className="block text-gray-700 mb-2">
+                  End Date:
+                  <input
+                    type="date"
+                    value={entry.endDate}
+                    min="1900-01-01"
+                    max={currentDate}
+                    className="border border-gray-300 rounded p-2 w-full text-black"
+                    onChange={(e) => handleEditEducationField(index, 'endDate', e.target.value)} />
+                </label>
+                <button className="bg-green-500 text-white rounded px-4 py-2" onClick={() => handleSaveEducationHistory(index)}>Save</button>
+                <button className="bg-red-500 text-white rounded px-4 py-2 ml-2" onClick={() => handleRemoveEducationHistoryFields(index)}>Remove</button>
               </>
             )}
           </div>
         ))}
         {educationHistory.every(entry => entry.isSaved) && (
-        <button className="bg-blue-500 text-white rounded px-4 py-2" onClick={handleAddEducationHistory}>
-          Add
-        </button>
+          <button className="bg-blue-500 text-white rounded px-4 py-2" onClick={handleAddEducationHistory}>
+            Add
+          </button>
         )}
       </div>
       <div className="mb-4">
@@ -684,7 +731,6 @@ const UserProfile: React.FC = () => {
       </div>
     </div>
   );
-  
 };
 
 export default UserProfile;
